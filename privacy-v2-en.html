@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>geoHELP — Privacy notice v2</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.45; padding: 16px; color: #1b1b1b; max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.25rem; color: #b71c1c; }
+    h2 { font-size: 1.05rem; margin-top: 1.2em; }
+    p, li { font-size: 0.95rem; }
+    ul { padding-left: 1.2em; }
+    .muted { color: #555; font-size: 0.85rem; }
+    .box { background: #f5f5f5; padding: 12px; border-radius: 8px; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>Privacy notice</h1>
+  <p class="muted">Version <strong>v2</strong> — geoHELP mobile app (Android, <code>it.geohelp</code>)</p>
+
+  <h2>1. Data controller</h2>
+  <p>The data controller is <strong>Roberto Ronco</strong>.</p>
+  <p><strong>Address:</strong> Via Candiolo 15, 10127 Turin (TO), Italy.</p>
+  <p><strong>Privacy contacts:</strong> email <a href="mailto:rronco23@gmail.com">rronco23@gmail.com</a>; certified email (PEC) <a href="mailto:r.ronco@pec.it">r.ronco@pec.it</a>; phone <a href="tel:+393711500701">+39 371 1500701</a>.</p>
+  <p><strong>Data Protection Officer (DPO):</strong> not appointed. For privacy-related requests and GDPR rights, contact the controller using the details above.</p>
+
+  <h2>2. Service description</h2>
+  <p>After registration, geoHELP lets you send <strong>help requests by SMS</strong> with <strong>GPS location</strong> and essential data to numbers configured for the service (operations centre / volunteers). Manual requests (<strong>Help</strong>) are prepared through the phone’s <strong>Messages</strong> app (mobile network / SIM). Optional <strong>MAN DOWN</strong> may detect falls or impacts and, after a cancellable 60-second countdown, send automatic SMS: first via the user’s <strong>SIM</strong>; if sending fails, via cloud provider <strong>Twilio</strong> (sender ID <strong>geoHELP</strong>). The service <strong>does not replace</strong> official emergency numbers (e.g. 112).</p>
+
+  <h2>3. Personal data processing (required consent)</h2>
+  <div class="box">
+    <p>I consent to the processing of my personal data (<strong>email</strong>, <strong>first name</strong>, <strong>birth year</strong>, <strong>user phone number</strong>, optional profile fields, <strong>GPS location</strong> when the help request is sent) for the geoHELP service, as described in this notice. This consent is required to use the app.</p>
+  </div>
+  <p><strong>Data processed:</strong> account (email, password); profile (name, birth year, <strong>mandatory user phone</strong>, optional gender and family phone); help request content (emergency type, notes); consent history; statistical SMS event logs (<strong>sms_events</strong>: channel, type, outcome — <strong>without message text</strong>).</p>
+  <p><strong>“Remember me” option:</strong> if enabled, email and password may be stored encrypted on the device (EncryptedSharedPreferences) to ease sign-in; they are not shared with third parties for marketing.</p>
+  <p><strong>Storage:</strong> data on <strong>Supabase</strong> infrastructure (EU region: Ireland), with per-user access rules (RLS) and encrypted transport (HTTPS).</p>
+  <p><strong>SMS recipients:</strong> primary and backup service numbers, who receive the SMS content (including GPS coordinates and the user’s phone number for callback).</p>
+  <p><strong>Maps:</strong> to show your position the app may download tiles from <strong>OpenStreetMap</strong> and, optionally, <strong>Esri</strong> (orthophoto); those providers may process technical connection data (e.g. IP address) under their own notices.</p>
+  <p><strong>Legal basis:</strong> consent (GDPR Art. 6(1)(a)) and, where applicable, performance of the service you requested.</p>
+
+  <h2>4. Medical data (optional consent)</h2>
+  <div class="box">
+    <p>I consent to storing my medical data (conditions, allergies, therapies, pacemaker, notes) on the geoHELP backend, in structured form, protected by per-user security rules (RLS) and encrypted transport (HTTPS). I understand that the data may be accessed by the team operating the service for rescue, support and verification purposes, and may be included in summary form in emergency SMS messages. Access to the medical form on the device is protected by a personal PIN. I can revoke consent at any time.</p>
+  </div>
+  <p>Legal basis: explicit consent (GDPR Art. 9(2)(a)). Health data on the server is not end-to-end encrypted; authorised staff may access it for the purposes stated.</p>
+
+  <h2>5. MAN DOWN feature (optional consent)</h2>
+  <div class="box">
+    <p>I consent to using the device motion sensors to detect possible falls or strong impacts and, after a 60-second countdown that I can cancel, to automatically sending emergency SMS to the configured primary and backup numbers (up to 3) with GPS position, user phone number and essential data (including a medical summary if I gave medical consent). For GPS during an alert (including when the screen is off), the app may request <strong>background / always-on location</strong> in addition to while-in-use access. I understand false alarms may occur and that automatic SMS requires the dedicated phone permission. If the SIM cannot send, the message may be sent via <strong>Twilio</strong> (USA). I can turn this feature off at any time in the app.</p>
+  </div>
+  <p>Legal basis: consent (GDPR Art. 6(1)(a)).</p>
+
+  <h2>6. Processors and other recipients</h2>
+  <p><strong>Supabase Inc.</strong> — database hosting, authentication and cloud functions (EU, Ireland), as processor under a DPA.</p>
+  <p><strong>Twilio Inc.</strong> — SMS sending only as MAN DOWN fallback when the SIM fails (USA; possible transfers outside the EEA with the provider’s contractual safeguards, e.g. Standard Contractual Clauses).</p>
+  <p><strong>Mobile network operators</strong> — transport of SMS sent from the user’s SIM.</p>
+  <p><strong>Map providers</strong> (OpenStreetMap Foundation, Esri) — for map display only, under their respective notices.</p>
+  <p><strong>Service management team</strong> — personnel authorised by the controller for administration, support and SOS number management.</p>
+
+  <h2>7. Device permissions</h2>
+  <p>Depending on features you use, the app may request these Android permissions:</p>
+  <ul>
+    <li><strong>Location</strong> (while in use and, for MAN DOWN, in background): GPS for maps and emergency SMS;</li>
+    <li><strong>SMS</strong>: sending or preparing help messages (Help and MAN DOWN);</li>
+    <li><strong>Motion sensors</strong> (accelerometer): fall/impact detection for MAN DOWN;</li>
+    <li><strong>Notifications</strong>: alerts during MAN DOWN alarms and service status;</li>
+    <li><strong>Foreground service</strong> (where required by the system): active MAN DOWN monitoring.</li>
+  </ul>
+  <p>You can revoke permissions in phone settings; some features may no longer work.</p>
+
+  <h2>8. Cookies, tracking and technical data</h2>
+  <p>geoHELP is a <strong>mobile application</strong>, not a website with advertising cookies. The app does <strong>not</strong> use behavioural profiling, advertising trackers or third-party marketing analytics.</p>
+  <p>Only <strong>technical data</strong> needed to operate the service may be processed (e.g. HTTPS requests to Supabase, map tile downloads, SMS via Twilio or SIM, server <strong>sms_events</strong> logs without message content).</p>
+
+  <h2>9. Retention periods</h2>
+  <ul>
+    <li><strong>Account and profile:</strong> until account deletion or a deletion request to the controller;</li>
+    <li><strong>Medical data:</strong> until medical consent is withdrawn or the account is deleted;</li>
+    <li><strong>Consent history:</strong> kept to demonstrate consent given (immutable rows for the user);</li>
+    <li><strong>sms_events logs:</strong> for quality and technical support, for as long as necessary (final periods to be set with legal counsel);</li>
+    <li><strong>“Remember me” on device:</strong> until app uninstall, sign-out or disabling the option.</li>
+  </ul>
+
+  <h2>10. Minors</h2>
+  <p>The service is not intended for children under 14. If you believe a minor provided data without parental consent, contact the controller for deletion.</p>
+
+  <h2>11. Your rights</h2>
+  <p>You may exercise access, rectification, erasure, restriction, portability, objection, and withdraw consent by emailing <a href="mailto:rronco23@gmail.com">rronco23@gmail.com</a> or PEC <a href="mailto:r.ronco@pec.it">r.ronco@pec.it</a>. You may lodge a complaint with your supervisory authority. In the app: <strong>Consents and privacy</strong>.</p>
+
+  <h2>12. Updates</h2>
+  <p>If purposes or processing change materially, a new notice version (e.g. v3) will be published and renewed consent may be requested in the app. The current version is shown on this page and in the consents screen.</p>
+
+  <p class="muted">v2 — May 2026. Adds permissions, no marketing tracking, retention and alignment with Supabase/Twilio/MAN DOWN. Contractual details and final retention periods to be confirmed with legal counsel.</p>
+</body>
+</html>
