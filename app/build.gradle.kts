@@ -31,8 +31,8 @@ android {
         applicationId = "it.geohelp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 57
-        versionName = "1.2.36"
+        versionCode = 58
+        versionName = "1.2.37"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

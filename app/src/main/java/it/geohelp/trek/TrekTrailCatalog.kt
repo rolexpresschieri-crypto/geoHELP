@@ -2,6 +2,49 @@ package it.geohelp.trek
 
 object TrekTrailCatalog {
     fun trails(): List<TrekTrailRow> = listOf(
+        // —— Cesana ——
+        TrekTrailRow(
+            comune = "Cesana",
+            sentieroNome = "Bousson - Lago Nero",
+            sentieroNumero = "n. 7",
+            breveDescrizione = "Escursione nel bosco fino al Lago Nero.",
+            pdfAsset = "trek/pdf/CESANA/7_bousson_lago_nero.pdf",
+            trkAsset = "trek/trk/CESANA/7_bousson_lago_nero.trk",
+            startLat = 44.931943,
+            startLon = 6.816078,
+        ),
+        TrekTrailRow(
+            comune = "Cesana",
+            sentieroNome = "Lago Nero - Lago dei Sette Colori",
+            sentieroNumero = "n. 7bis",
+            breveDescrizione = "Escursione in quota tra prateria alpina e sterrati.",
+            pdfAsset = "trek/pdf/CESANA/7bis_lago_nero_lago_dei_sette_colori.pdf",
+            trkAsset = "trek/trk/CESANA/7bis_lago_nero_lago_dei_sette_colori.trk",
+            startLat = 44.903145,
+            startLon = 6.794737,
+        ),
+        TrekTrailRow(
+            comune = "Cesana",
+            sentieroNome = "SS24 - Batterie del Petit Vallon",
+            sentieroNumero = "n. 17-18",
+            breveDescrizione = "Anello panoramico con interesse storico-militare (Clavière).",
+            pdfAsset = "trek/pdf/CESANA/17_18_ss24__le_batterie_del_petit_vallon_claviere.pdf",
+            trkAsset = "trek/trk/CESANA/17_18_ss24__le_batterie_del_petit_vallon_claviere.trk",
+            startLat = 44.943205,
+            startLon = 6.759403,
+        ),
+        TrekTrailRow(
+            comune = "Cesana",
+            sentieroNome = "Cave di Marmo Verde",
+            sentieroNumero = "n. 31",
+            breveDescrizione = "Salita alle cave di marmo verde sopra Cesana.",
+            pdfAsset = "trek/pdf/CESANA/31_cesana_cave_di_marmo_verde.pdf",
+            trkAsset = "trek/trk/CESANA/31_cesana_cave_di_marmo_verde.trk",
+            startLat = 44.952836,
+            startLon = 6.793669,
+        ),
+
+        // —— Sestriere ——
         TrekTrailRow(
             comune = "Sestriere",
             sentieroNome = "Passeggiata del Senatore",
