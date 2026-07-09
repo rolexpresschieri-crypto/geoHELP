@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>geoHELP — Accesso</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; max-width: 720px; margin: 0 auto; line-height: 1.5; }
+    .hint { color: #424242; }
+  </style>
+</head>
+<body>
+  <h1>geoHELP</h1>
+  <p class="hint">Reindirizzamento all'app in corso…</p>
+  <p class="hint">Redirecting to the app…</p>
+  <script>
+    (function () {
+      var target = "it.geohelp://login-callback" + (window.location.search || "") + (window.location.hash || "");
+      window.location.replace(target);
+      setTimeout(function () {
+        document.body.insertAdjacentHTML("beforeend", "<p>Se l'app non si apre, installa geoHELP e riapri il link dall'email.</p>");
+      }, 2500);
+    })();
+  </script>
+</body>
+</html>

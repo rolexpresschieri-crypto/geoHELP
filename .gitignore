@@ -1,0 +1,25 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.vscode/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+keystore.properties
+*.keystore
+*.jks
+scripts/node_modules/
+/app/build/
+*.apk
+*.aab
+# File locali / bozze non necessari in repo
+*.docx
+*.aia
+map_debug.png
+2026_capitolato_tecnico_GeopHELP_ver001.pdf
+docs/login_mandown.mp4
+docs/video_geoHELP_01.mp4

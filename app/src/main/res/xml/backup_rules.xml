@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Esclude credenziali cifrate e sessione auth dal backup cloud.
+  Senza questo, install da Play può ripristinare prefs legate al vecchio Keystore → crash all'avvio.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="geohelp_auth_secure_prefs.xml" />
+    <exclude domain="sharedpref" path="geohelp_auth_prefs_fallback.xml" />
+    <exclude domain="sharedpref" path="geohelp_medical_secure_prefs.xml" />
+</full-backup-content>

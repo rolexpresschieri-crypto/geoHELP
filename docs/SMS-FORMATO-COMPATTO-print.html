@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <title>geoHELP — Formato SMS compatto</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; margin: 0; }
+    h1 { color: #b71c1c; font-size: 18pt; border-bottom: 2px solid #b71c1c; padding-bottom: 6px; margin-top: 0; }
+    h2 { color: #333; font-size: 13pt; margin-top: 1.3em; page-break-after: avoid; }
+    h3 { font-size: 11pt; page-break-after: avoid; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; }
+    th, td { border: 1px solid #bbb; padding: 5px 7px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; font-weight: 600; }
+    pre { background: #f5f5f5; padding: 8px; font-size: 9pt; white-space: pre-wrap; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+    @page { size: A4; margin: 16mm 12mm; }
+  </style>
+</head>
+<body><h1>geoHELP — Legenda SMS compatto</h1>
+<p><strong>Destinatari:</strong> numeri in <code>sos_recipients</code> (primari, backup), centrale, volontari.<br><strong>Non</strong> va inviata agli utenti dell’app: è una guida per <strong>chi riceve</strong> gli SMS.</p>
+<blockquote>
+<p>Tutti gli SMS geoHELP usano lo stesso “dialetto” breve per ridurre costi (segmenti Twilio) e leggere più in fretto.<br>Solo la <strong>prima riga</strong> (header) cambia tra SOS manuale e MAN DOWN.</p>
+</blockquote>
+<hr>
+<h2>Tipi di messaggio (prima riga)</h2>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SOS geoHELP</strong></td>
+<td>Richiesta <strong>manuale</strong> dalla tab Help (utente ha preparato l’invio in Messaggi)</td>
+</tr>
+<tr>
+<td><strong>MAN DOWN geoHELP</strong></td>
+<td>Allarme <strong>automatico</strong> caduta/urto (countdown 60 s)</td>
+</tr>
+<tr>
+<td><strong>MD TRACCIA n/4 geoHELP</strong></td>
+<td>Aggiornamento posizione (movimento dopo MAN DOWN)</td>
+</tr>
+<tr>
+<td><strong>MD NO SEG geoHELP</strong></td>
+<td>Invio automatico interrotto (rete/permessi)</td>
+</tr>
+</tbody></table>
+<p>Mittente Twilio in produzione: <strong>geoHELP</strong> (alfanumerico).</p>
+<hr>
+<h2>Campi nel corpo (sempre uguali)</h2>
+<table>
+<thead>
+<tr>
+<th>Codice</th>
+<th>Significato</th>
+<th>Esempio</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>N:</strong></td>
+<td>Nome (+ anno nascita se presente)</td>
+<td><code>N:Roberto 1963</code></td>
+</tr>
+<tr>
+<td><strong>T:</strong></td>
+<td>Telefono utente (richiamo)</td>
+<td><code>T:+393711500701</code></td>
+</tr>
+<tr>
+<td><strong>Pos:</strong></td>
+<td>Lat, lon (+ alt, precisione, velocità se c’è)</td>
+<td><code>Pos:45.0069,7.8245 a326 acc19</code></td>
+</tr>
+<tr>
+<td><strong>R:</strong></td>
+<td>Tipo richiesta (solo SOS manuale)</td>
+<td><code>R:INCIDENTE</code></td>
+</tr>
+<tr>
+<td><strong>Nt:</strong></td>
+<td>Note utente (solo SOS)</td>
+<td><code>Nt:sciovia ghiacciata</code></td>
+</tr>
+<tr>
+<td><strong>Med:</strong></td>
+<td>Sintesi medica (se consenso)</td>
+<td><code>Med:A+ | ALL:... | PAT:...</code></td>
+</tr>
+<tr>
+<td><strong>Dir:</strong></td>
+<td>Direzione (solo traccia)</td>
+<td><code>Dir:NNE</code></td>
+</tr>
+<tr>
+<td><strong>D:</strong></td>
+<td>Distanza da punto iniziale traccia</td>
+<td><code>D:45m</code></td>
+</tr>
+</tbody></table>
+<p><strong>Pos:</strong> coordinate con <strong>4 decimali</strong>; <code>a</code> = altitudine metri; <code>acc</code> = precisione fix metri; <code>v</code> = velocità km/h (traccia).</p>
+<p><strong>Med:</strong> priorità a gruppo sanguigno e allergie; testo lungo può essere <strong>troncato</strong> (~88 caratteri).</p>
+<hr>
+<h2>Esempi</h2>
+<h3>SOS manuale (Help)</h3>
+<pre><code class="language-text">SOS geoHELP
+N:Roberto 1963 T:+393711500701
+R:INCIDENTE Nt:-
+Pos:45.0069,7.8245 a326
+Med:A+ | ALL:AULIN | PAT:CA,PO
+</code></pre>
+<h3>MAN DOWN iniziale</h3>
+<pre><code class="language-text">MAN DOWN geoHELP
+N:Roberto 1963 T:+393711500701
+Pos:45.0069,7.8245 a326 acc19
+Med:A+ | ALL:AULIN | PAT:CA,PO
+</code></pre>
+<h3>Traccia 2/4</h3>
+<pre><code class="language-text">MD TRACCIA 2/4 geoHELP
+N:Roberto
+Pos:45.0100,7.8300 a328 acc18 v6
+Dir:NNE D:52m
+</code></pre>
+<h3>Perso segnale</h3>
+<pre><code class="language-text">MD NO SEG geoHELP
+N:Roberto T:+393711500701
+Auto interrotto. Ultima pos non aggiornata.
+</code></pre>
+<hr>
+<h2>Segmenti SMS (fatturazione Twilio)</h2>
+<ul>
+<li>Un “SMS” sul telefono può essere <strong>1 messaggio</strong> ma <strong>più segmenti</strong> in fattura (~160 caratteri per segmento).</li>
+<li>Obiettivo formato compatto: <strong>2–3 segmenti</strong> per MAN DOWN iniziale (prima spesso 6).</li>
+<li><strong>1 invio API</strong> = 1 riga in Twilio Logs (non confondere con i segmenti).</li>
+</ul>
+<hr>
+<h2>Cosa non è in questo SMS</h2>
+<ul>
+<li>Nessuna risposta al mittente geoHELP (SMS unidirezionale).</li>
+<li>Il testo <strong>non</strong> sostituisce il <strong>112</strong> o i canali istituzionali.</li>
+</ul>
+<hr>
+<p><em>Documento operativo geoHELP — distribuire al team SOS (PDF allegato).</em></p>
+</body>
+</html>

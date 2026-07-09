@@ -1,0 +1,14 @@
+{
+  "name": "geohelp-doc-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "privacy-pdf": "node gen-privacy-pdf.mjs",
+    "sms-format-pdf": "node gen-sms-format-pdf.mjs",
+    "docs-pdf": "node gen-privacy-pdf.mjs && node gen-sms-format-pdf.mjs"
+  },
+  "dependencies": {
+    "marked": "^15.0.0",
+    "playwright": "^1.49.0"
+  }
+}

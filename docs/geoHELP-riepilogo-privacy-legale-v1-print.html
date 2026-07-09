@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <title>geoHELP — Riepilogo privacy legale v1</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; margin: 0; }
+    h1 { color: #b71c1c; font-size: 18pt; border-bottom: 2px solid #b71c1c; padding-bottom: 6px; margin-top: 0; }
+    h2 { color: #333; font-size: 13pt; margin-top: 1.3em; page-break-after: avoid; }
+    h3 { font-size: 11pt; page-break-after: avoid; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; }
+    th, td { border: 1px solid #bbb; padding: 5px 7px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; font-weight: 600; }
+    blockquote { background: #fff8e1; border-left: 4px solid #f9a825; margin: 12px 0; padding: 8px 12px; }
+    code { background: #eee; padding: 1px 4px; font-size: 9pt; }
+    pre { background: #f5f5f5; padding: 8px; font-size: 8.5pt; white-space: pre-wrap; }
+    hr { border: none; border-top: 1px solid #ccc; margin: 16px 0; }
+    @page { size: A4; margin: 16mm 12mm; }
+    @media print { h2, h3 { page-break-after: avoid; } tr { page-break-inside: avoid; } }
+  </style>
+</head>
+<body><h1>geoHELP — Riepilogo privacy, trattamento dati e consensi</h1>
+<p><strong>Destinatario:</strong> consulente legale / DPO<br><strong>Progetto:</strong> app mobile <strong>geoHELP</strong> (Android, flavor dev <code>it.geohelp.dev</code>)<br><strong>Versione informativa / consensi in app:</strong> <code>v1</code> (<code>ConsentKeys.CURRENT_VERSION</code>)<br><strong>Data documento:</strong> maggio 2026<br><strong>Lingue app:</strong> italiano (primaria), inglese  </p>
+<blockquote>
+<p><strong>Avvertenza:</strong> questo documento è una <strong>bozza operativa</strong> redatta sullo stato tecnico dell’applicazione. <strong>Non costituisce consulenza legale.</strong> Serve al legale per redigere informativa definitiva, termini d’uso, registro trattamenti, DPIA e contratti con i responsabili.</p>
+</blockquote>
+<hr>
+<h2>Sommario esecutivo</h2>
+<p>geoHELP consente a utenti registrati di inviare <strong>richieste di aiuto via SMS</strong> con <strong>posizione GPS</strong> e dati di profilo, con opzione <strong>dati medici</strong> e funzione <strong>MAN DOWN</strong> (rilevamento caduta/urto → countdown 60 s → SMS automatici).</p>
+<table>
+<thead>
+<tr>
+<th>Aspetto</th>
+<th>Situazione attuale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Titolare del trattamento</strong></td>
+<td><strong>[DA COMPILARE]</strong> — associazione / società che pubblica il servizio</td>
+</tr>
+<tr>
+<td><strong>Hosting dati</strong></td>
+<td><strong>Supabase</strong>, regione <strong>UE (Irlanda)</strong></td>
+</tr>
+<tr>
+<td><strong>Dati sanitari</strong></td>
+<td>Tabella <code>medical_data</code>, in chiaro su DB, RLS; consenso esplicito art. 9</td>
+</tr>
+<tr>
+<td><strong>Consensi in app</strong></td>
+<td>3 flag: privacy (obbl.), medical (opz.), man_down (opz.); storico immutabile su <code>consents</code></td>
+</tr>
+<tr>
+<td><strong>Informativa utente</strong></td>
+<td>HTML in app (<code>assets/privacy/privacy_v1_it.html</code> / <code>_en.html</code>) + link da schermata consensi</td>
+</tr>
+<tr>
+<td><strong>Cancellazione account</strong></td>
+<td><strong>[DA DEFINIRE]</strong> — procedura non ancora automatizzata in app</td>
+</tr>
+<tr>
+<td><strong>Log statistico SMS</strong></td>
+<td>Tabella <code>sms_events</code> (senza testo messaggio); base giuridica e retention <strong>[DA DEFINIRE col legale]</strong></td>
+</tr>
+<tr>
+<td><strong>Telefono utente</strong></td>
+<td>Campo obbligatorio <code>profiles.user_phone</code> (+39 E.164); riga <strong>Tel. utente</strong> negli SMS di emergenza</td>
+</tr>
+<tr>
+<td><strong>Fallback SMS MAN DOWN</strong></td>
+<td>Se la SIM fallisce: <strong>Twilio</strong> via Edge Function Supabase <code>send-mandown-sms</code> (mittente <code>geoHELP</code> o numero Twilio in test)</td>
+</tr>
+<tr>
+<td><strong>SOS manuale (Help)</strong></td>
+<td>Solo app <strong>Messaggi</strong> / rete operatore — <strong>nessun</strong> invio tramite Twilio</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Parte A — Ruoli GDPR e documentazione da predisporre</h2>
+<h3>A.1 Ruoli</h3>
+<table>
+<thead>
+<tr>
+<th>Ruolo</th>
+<th>Soggetto tipico</th>
+<th>Note per geoHELP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Titolare del trattamento</strong></td>
+<td>[DA INSERIRE]</td>
+<td>Decide finalità e mezzi; responsabile verso gli utenti</td>
+</tr>
+<tr>
+<td><strong>Responsabile del trattamento</strong></td>
+<td>Supabase Inc.</td>
+<td>Hosting DB, Auth; richiede <strong>DPA</strong> firmato</td>
+</tr>
+<tr>
+<td><strong>Sub-responsabili</strong></td>
+<td>Elenco nel DPA Supabase (es. AWS)</td>
+<td>Verificare trasferimenti extra-SEE</td>
+</tr>
+<tr>
+<td><strong>Sub-responsabile / fornitore SMS cloud</strong></td>
+<td><strong>Twilio Inc.</strong> (USA)</td>
+<td>Solo fallback MAN DOWN se SIM fallisce; tratta numeri destinatari, testo SMS, mittente; <strong>DPA Twilio e SCC [DA VERIFICARE col legale]</strong></td>
+</tr>
+<tr>
+<td><strong>Destinatari SMS</strong></td>
+<td>Numeri in <code>sos_recipients</code></td>
+<td>Ricevono contenuto SMS, GPS e <strong>Tel. utente</strong>; non sono “utenti” dell’app</td>
+</tr>
+<tr>
+<td><strong>Incaricati</strong></td>
+<td>Staff / volontari con accesso dashboard</td>
+<td>Policy accessi e formazione</td>
+</tr>
+<tr>
+<td><strong>DPO / RPD</strong></td>
+<td>[DA VALUTARE]</td>
+<td>Consigliato valutare obbligo/nomina per dati salute + geoloc. + automazione</td>
+</tr>
+</tbody></table>
+<h3>A.2 Documenti da far redigere o completare al legale</h3>
+<ol>
+<li><strong>Informativa privacy</strong> (art. 13–14 GDPR) — espandere HTML v1 in app  </li>
+<li><strong>Termini e condizioni d’uso</strong> — limitazione responsabilità; non sostituisce 112  </li>
+<li><strong>Registro dei trattamenti</strong> (art. 30 GDPR)  </li>
+<li><strong>DPIA / valutazione d’impatto</strong> (art. 35) — dati salute, GPS, MAN DOWN automatizzato  </li>
+<li><strong>DPA con Supabase</strong> — modulo standard + verifica sub-responsabili  </li>
+<li><strong>DPA / condizioni Twilio</strong> — per invio SMS cloud (trasferimento verso USA se applicabile)  </li>
+<li><strong>Policy interna</strong> accessi amministratori e gestione richieste diritti  </li>
+<li><strong>Procedura cancellazione account</strong> e tempi di risposta</li>
+</ol>
+<hr>
+<h2>Parte B — Stato tecnico dell’app (per il legale)</h2>
+<h3>B.1 Architettura dati</h3>
+<pre><code>Utente Android (geoHELP)
+    → HTTPS → Supabase (UE, Irlanda)
+        • auth.users (email, password hash)
+        • profiles (nome, anno nascita, email, user_phone, …)
+        • medical_data (patologie, allergie, …)
+        • consents (storico consensi, versione v1)
+        • sos_recipients (numeri SOS; gestione admin con flag can_manage_sos_recipients)
+        • sms_events (log statistico invii: canale, tipo, emergenza, esito — no testo SMS)
+    → Edge Function send-mandown-sms (solo se SIM MAN DOWN fallisce)
+        → Twilio Inc. (USA) → SMS ai numeri primari
+    → SMS (rete operatore / SIM utente)
+        • SOS manuale (app Messaggi; log «prepared» in sms_events) — no Twilio
+        • MAN DOWN: prima SIM (SmsManager multipart); se fallisce → Twilio; ultimo fallback Messaggi
+</code></pre>
+<h3>B.2 Tabelle database (Supabase <code>public</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Tabella</th>
+<th>Contenuto</th>
+<th>RLS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>profiles</code></td>
+<td>Anagrafica minima + <code>email</code>, <strong><code>user_phone</code></strong> (obbligatorio per SMS)</td>
+<td>Solo proprio <code>id</code></td>
+</tr>
+<tr>
+<td><code>medical_data</code></td>
+<td>Dati sanitari strutturati</td>
+<td>Solo proprio <code>user_id</code></td>
+</tr>
+<tr>
+<td><code>consents</code></td>
+<td>Storico consensi (no update/delete da client)</td>
+<td>Solo proprio <code>user_id</code></td>
+</tr>
+<tr>
+<td><code>sos_recipients</code></td>
+<td>Numeri primari/backup servizio</td>
+<td>Select attivi per utenti autenticati/anon</td>
+</tr>
+<tr>
+<td><code>sms_events</code></td>
+<td>Log statistico SMS (vedi § B.5)</td>
+<td>Solo proprio <code>user_id</code> (insert/select)</td>
+</tr>
+</tbody></table>
+<h3>B.3 Funzionalità utente rilevanti per privacy</h3>
+<table>
+<thead>
+<tr>
+<th>Funzione</th>
+<th>Dati coinvolti</th>
+<th>Base giuridica proposta</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Registrazione / login</td>
+<td>Email, password</td>
+<td>Consenso / contratto [legale]</td>
+</tr>
+<tr>
+<td>Profilo</td>
+<td>Nome, anno nascita, sesso opz., <strong>tel. utente</strong> (obbl.), tel. familiare opz.</td>
+<td>Consenso privacy</td>
+</tr>
+<tr>
+<td>SOS manuale</td>
+<td>GPS, tipo emergenza, note, nome, Med opz.</td>
+<td>Consenso privacy (+ medico se Med in SMS)</td>
+</tr>
+<tr>
+<td>Dati medici</td>
+<td>Categorie art. 9</td>
+<td><strong>Consenso esplicito</strong> medical_data</td>
+</tr>
+<tr>
+<td>MAN DOWN</td>
+<td>Sensori, GPS, SMS auto, eventuale traccia</td>
+<td><strong>Consenso</strong> man_down</td>
+</tr>
+<tr>
+<td>Consensi e privacy</td>
+<td>Revoca/aggiornamento, nuova riga DB</td>
+<td>Trasparenza + prova consenso</td>
+</tr>
+<tr>
+<td>Ricordami</td>
+<td>Email/password in EncryptedSharedPreferences</td>
+<td>Da dichiarare in informativa</td>
+</tr>
+<tr>
+<td>PIN medico</td>
+<td>Hash locale per account (non cifra DB)</td>
+<td>Lock dispositivo</td>
+</tr>
+<tr>
+<td>Log eventi SMS</td>
+<td>Metadati in <code>sms_events</code> (no contenuto SMS)</td>
+<td><strong>[DA DEFINIRE]</strong> — es. legittimo interesse / qualità servizio</td>
+</tr>
+</tbody></table>
+<h3>B.4 MAN DOWN (dettaglio per DPIA)</h3>
+<ol>
+<li>Rilevamento urto/caduta (accelerometro)  </li>
+<li>Countdown <strong>60 secondi</strong> (annullabile)  </li>
+<li>SMS iniziale ai numeri <strong>primari</strong> (fino a 2 primari + 1 backup, max 3 destinatari)  </li>
+<li>Verifica movimento (~10 s); se movimento → fino a <strong>4 SMS</strong> di tracciamento (ogni 15 s)  </li>
+<li>Invio <strong>multipart</strong> (coordinate, dati medici, riga <strong>Tel. utente: +39…</strong> da <code>user_phone</code>)  </li>
+<li><strong>Canale invio (ordine):</strong> (a) <strong>SIM</strong> (<code>SmsManager</code>); (b) se fallisce → <strong>Twilio</strong> (<code>send-mandown-sms</code>, mittente <strong><code>geoHELP</code></strong>); (c) se Twilio fallisce → <strong>retry</strong> con rete (Wi‑Fi/dati), <strong>senza</strong> apertura app Messaggi  </li>
+<li>Testo SMS in <strong>formato compatto</strong> (meno segmenti a fatturazione); legenda PDF per destinatari SOS: <code>docs/SMS-FORMATO-COMPATTO.pdf</code>  </li>
+<li>Revoca consenso → disarmo servizio</li>
+</ol>
+<p><strong>Nota per il legale (Twilio):</strong> il testo SMS (inclusi coordinate e tel. utente) transita verso Twilio solo nel ramo (b). Twilio <strong>non</strong> conserva il profilo utente su Supabase; tratta i dati necessari all’invio SMS secondo propria informativa/DPA. Valutare <strong>trasferimento extra-SEE</strong> (USA) e base giuridica (es. consenso MAN DOWN + necessità del soccorso).</p>
+<h3>B.5 Log statistico SMS (<code>sms_events</code>) — implementato 1.0.50</h3>
+<p><strong>Finalità proposta (da confermare al legale):</strong> statistiche d’uso del servizio, qualità invii, supporto tecnico. <strong>Non</strong> viene salvato il testo degli SMS né coordinate nel log server.</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>channel</code></td>
+<td><code>manual</code> (SOS da tab Help) · <code>mandown</code></td>
+</tr>
+<tr>
+<td><code>message_kind</code></td>
+<td><code>prepared</code> (solo manuale: apertura app Messaggi) · <code>initial</code> · <code>trace</code> · <code>lost_signal</code></td>
+</tr>
+<tr>
+<td><code>emergency_type</code></td>
+<td>Codice tipo emergenza manuale (<code>incident</code>, <code>illness</code>, <code>vehicle</code>, <code>lost</code>, <code>weather</code>, <code>other</code>) oppure <code>mandown</code></td>
+</tr>
+<tr>
+<td><code>outcome</code></td>
+<td><code>ok</code> · <code>failed</code></td>
+</tr>
+<tr>
+<td>Altro</td>
+<td><code>dest_count</code>, <code>segment_count</code>, <code>trace_index</code> (1–4), <code>recipient_role</code> (<code>primary</code>/<code>backup</code>)</td>
+</tr>
+</tbody></table>
+<p><strong>Limiti tecnici da dichiarare:</strong></p>
+<ul>
+<li><strong>SOS manuale:</strong> l’app registra solo l’evento <strong>prepared</strong> (SMS preparato), non l’invio effettivo da parte dell’utente in Messaggi.  </li>
+<li><strong>MAN DOWN:</strong> l’app registra tentativo di invio (<code>ok</code>/<code>failed</code>), non la consegna al destinatario (salvo integrazioni future con callback operatore).</li>
+</ul>
+<p><strong>Migrazione DB:</strong> <code>supabase/migrations/0010_sms_events.sql</code></p>
+<hr>
+<h2>Parte C — I tre consensi in app (testi attuali IT)</h2>
+<h3>C.1 Trattamento dati personali — <strong>OBBLIGATORIO</strong> (<code>privacy</code>)</h3>
+<p><strong>Label:</strong> Trattamento dati personali (obbligatorio)</p>
+<p><strong>Testo checkbox (<code>consents_privacy_body</code>):</strong></p>
+<blockquote>
+<p>Acconsento al trattamento dei dati personali (email, nome, anno di nascita, dati opzionali di profilo, posizione GPS al momento dell&#39;invio della richiesta di aiuto) per le finalità del servizio geoHELP, come da informativa privacy. Senza questo consenso non è possibile usare l&#39;app.</p>
+</blockquote>
+<p><strong>Dati inclusi (espansione per informativa):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Dato</th>
+<th>Dove</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Email</td>
+<td>Auth + <code>profiles.email</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td>Auth (hash)</td>
+</tr>
+<tr>
+<td>Nome, anno nascita, sesso, <strong>tel. utente</strong> (<code>user_phone</code>), tel. familiare</td>
+<td><code>profiles</code></td>
+</tr>
+<tr>
+<td>GPS, contenuto richiesta</td>
+<td>SMS / sensori</td>
+</tr>
+<tr>
+<td>Storico consensi</td>
+<td><code>consents</code></td>
+</tr>
+<tr>
+<td>Log eventi SMS (metadati)</td>
+<td><code>sms_events</code></td>
+</tr>
+</tbody></table>
+<p><strong>Revoca:</strong> da «Consensi e privacy»; senza privacy l’app non è utilizzabile.</p>
+<hr>
+<h3>C.2 Dati medici — <strong>OPZIONALE</strong> (<code>medical_data</code>)</h3>
+<p><strong>Label:</strong> Dati medici (opzionale)</p>
+<p><strong>Testo checkbox (<code>consents_medical_body</code>):</strong></p>
+<blockquote>
+<p>Acconsento al salvataggio dei miei dati medici (patologie, allergie, terapie, pacemaker, note) sul backend geoHELP, dove sono conservati in modo strutturato e protetti da regole di sicurezza per utente (RLS) e da trasporto cifrato (HTTPS). Comprendo che i dati possono essere consultati dal team che amministra il servizio per finalità di soccorso, supporto e verifica, e che possono essere inseriti in forma sintetica nelle SMS di emergenza. Sul dispositivo l&#39;accesso al modulo è protetto da un PIN personale. Posso revocare il consenso in qualsiasi momento.</p>
+</blockquote>
+<p><strong>Base giuridica:</strong> consenso esplicito art. 9.2.a GDPR.</p>
+<p><strong>Trasparenza tecnica:</strong> dati <strong>non cifrati</strong> sul server; leggibili da admin autorizzati; PIN solo su dispositivo.</p>
+<hr>
+<h3>C.3 MAN DOWN — <strong>OPZIONALE</strong> (<code>man_down</code>)</h3>
+<p><strong>Label:</strong> Funzione MAN DOWN (caduta / urto) (opzionale)</p>
+<p><strong>Testo checkbox (<code>consents_man_down_body</code>):</strong></p>
+<blockquote>
+<p>Acconsento all&#39;uso dei sensori di movimento del dispositivo per rilevare possibili cadute o urti violenti e, dopo un conto alla rovescia di 60 secondi annullabile, all&#39;invio automatico di SMS di emergenza ai numeri primari configurati, con posizione GPS e dati essenziali. Comprendo che possono verificarsi falsi allarmi e che l&#39;invio SMS automatico richiede il permesso dedicato sul telefono. Posso disattivare la funzione in qualsiasi momento dall&#39;app.</p>
+</blockquote>
+<p><strong>Nota:</strong> utenti con privacy già accettata vedono gate dedicato (<code>mandown_gate_intro</code>) se manca storico <code>man_down</code>.</p>
+<p><strong>Punto per il legale:</strong> valutare art. 22 GDPR (decisioni automatizzate).</p>
+<hr>
+<h2>Parte D — Struttura informativa privacy (indice sezioni §0–§15)</h2>
+<table>
+<thead>
+<tr>
+<th>§</th>
+<th>Titolo</th>
+<th>Contenuto principale</th>
+<th>Stato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>Intestazione</td>
+<td>Titolo, invito a leggere, link a consensi</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Titolare e contatti</td>
+<td>Ragione sociale, privacy@, DPO</td>
+<td><strong>DA COMPILARE</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Natura servizio</td>
+<td>SOS, MAN DOWN, non sostituisce 112</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Dati personali</td>
+<td>Tabella dati, Supabase UE, SMS, revoca</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Dati medici</td>
+<td>art. 9, RLS, admin, SMS, PIN</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>5</td>
+<td>MAN DOWN</td>
+<td>Sensori, 60 s, falsi allarmi, revoca</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Destinatari / responsabili</td>
+<td>Supabase, numeri SOS, team, operatori</td>
+<td><strong>DA COMPLETARE</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Trasferimenti extra-UE</td>
+<td>SCC, sub-responsabili Supabase</td>
+<td><strong>DA VERIFICARE</strong></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Conservazione</td>
+<td>Tempi per account, medico, consensi, log <code>sms_events</code></td>
+<td><strong>DA DEFINIRE</strong></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Sicurezza</td>
+<td>HTTPS, RLS, PIN; limiti cifratura server</td>
+<td>In HTML app</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Diritti interessato</td>
+<td>Accesso, cancellazione, Garante; procedura</td>
+<td><strong>DA DEFINIRE</strong></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Obbligatorietà dati</td>
+<td>Email obbl.; med/MAN opz.</td>
+<td>In struttura</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Minori</td>
+<td>Età minima / genitori</td>
+<td><strong>DA DEFINIRE</strong></td>
+</tr>
+<tr>
+<td>13</td>
+<td>Modifiche informativa</td>
+<td>Versioning v1 → v2 + nuovo consenso</td>
+<td>Implementato in app</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Riepilogo consensi</td>
+<td>Tabella 3 <code>consent_type</code></td>
+<td>In app</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Allegati</td>
+<td>Termini, registro, cookie se sito</td>
+<td><strong>DA CREARE</strong></td>
+</tr>
+</tbody></table>
+<p><strong>File informativa in app:</strong> <code>app/src/main/assets/privacy/privacy_v1_it.html</code> e <code>privacy_v1_en.html</code><br><strong>Schermata:</strong> <code>PrivacyPolicyScreen</code> (WebView), link «Leggi l&#39;informativa privacy completa (v1)»</p>
+<p><strong>Disclaimer pre-SMS (aggiornato):</strong> cita Supabase UE e invita a leggere informativa; non afferma più assenza di server esterni.</p>
+<p><strong>Da aggiungere in informativa (v1 → v2):</strong> menzione <strong>Twilio</strong> come fornitore SMS di backup MAN DOWN (solo se SIM fallisce); campo <strong>tel. utente</strong> obbligatorio; tabella <code>sms_events</code> (già in struttura §3).</p>
+<hr>
+<h2>Parte E — Punti da decidere con il legale (checklist)</h2>
+<h3>E.1 Obblighi e valutazioni</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Nomina <strong>Titolare</strong> e recapiti nel § 1  </li>
+<li><input disabled="" type="checkbox"> Necessità <strong>DPO</strong>  </li>
+<li><input disabled="" type="checkbox"> Redazione <strong>DPIA</strong> (salute + geolocalizzazione + automazione MAN DOWN)  </li>
+<li><input disabled="" type="checkbox"> <strong>Registro trattamenti</strong> art. 30  </li>
+<li><input disabled="" type="checkbox"> <strong>DPA Supabase</strong> firmato e archiviato  </li>
+<li><input disabled="" type="checkbox"> <strong>DPA / garanzie Twilio</strong> (SMS cloud, possibile trasferimento USA)</li>
+</ul>
+<h3>E.2 Contenuti informativa</h3>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Tempi di conservazione</strong> (account, medical, consents, <strong><code>sms_events</code></strong>)  </li>
+<li><input disabled="" type="checkbox"> <strong>Base giuridica log <code>sms_events</code></strong> (legittimo interesse / servizio; menzione in § 3 informativa)  </li>
+<li><input disabled="" type="checkbox"> <strong>Trasferimenti</strong> extra-SEE e garanzie  </li>
+<li><input disabled="" type="checkbox"> <strong>Telefono utente</strong> (<code>user_phone</code>, obbligatorio): finalità, visibilità in SMS, conservazione  </li>
+<li><input disabled="" type="checkbox"> <strong>Telefono familiare</strong> in profilo: finalità e uso in SMS  </li>
+<li><input disabled="" type="checkbox"> <strong>Twilio</strong> in § 6 informativa (fallback MAN DOWN, no Help manuale)  </li>
+<li><input disabled="" type="checkbox"> <strong>Minori</strong> ed età minima servizio  </li>
+<li><input disabled="" type="checkbox"> <strong>Art. 22</strong> per MAN DOWN  </li>
+<li><input disabled="" type="checkbox"> <strong>Cancellazione account</strong> (tempi, canale, effetto su DB cascade)</li>
+</ul>
+<h3>E.3 Documenti aggiuntivi</h3>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Termini d’uso</strong>  </li>
+<li><input disabled="" type="checkbox"> Policy <strong>accesso dashboard</strong> Supabase (chi vede dati medici in chiaro)  </li>
+<li><input disabled="" type="checkbox"> Istruzioni per <strong>richieste diritti</strong> (email tipo privacy@…)</li>
+</ul>
+<h3>E.4 Allineamento app</h3>
+<p><strong>v1.0.42 e precedenti</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Consenso privacy senza «cognome»  </li>
+<li><input checked="" disabled="" type="checkbox"> Disclaimer SMS allineato a Supabase  </li>
+<li><input checked="" disabled="" type="checkbox"> Link informativa da consensi e pre-SMS  </li>
+<li><input checked="" disabled="" type="checkbox"> Gestione/revoca 3 consensi con storico su server  </li>
+<li><input checked="" disabled="" type="checkbox"> Email su <code>profiles</code> + sync da auth</li>
+</ul>
+<p><strong>v1.0.50</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> Log statistico <code>sms_events</code> (canale manuale / MAN DOWN, tipo emergenza, esito; senza testo SMS)  </li>
+<li><input checked="" disabled="" type="checkbox"> MAN DOWN: SMS multipart (niente troncamento 160 caratteri)  </li>
+<li><input disabled="" type="checkbox"> Informativa HTML in app: menzione esplicita <code>sms_events</code> — <strong>[DA REDIGERE col legale]</strong></li>
+</ul>
+<p><strong>v1.0.55 – v1.0.63</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <code>profiles.user_phone</code> obbligatorio; <strong>T:</strong> in SMS compatto  </li>
+<li><input checked="" disabled="" type="checkbox"> Admin nascosto numeri SOS (PIN + <code>can_manage_sos_recipients</code>)  </li>
+<li><input checked="" disabled="" type="checkbox"> Twilio <code>send-mandown-sms</code>, mittente <strong><code>geoHELP</code></strong> (Messaging Service IT)  </li>
+<li><input checked="" disabled="" type="checkbox"> Fix retry duplicati SMS (1.0.63)</li>
+</ul>
+<p><strong>v1.0.64</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>Formato SMS compatto</strong> unificato (Help SOS, MAN DOWN, traccia, no segnale)  </li>
+<li><input checked="" disabled="" type="checkbox"> Legenda destinatari: <code>docs/SMS-FORMATO-COMPATTO.pdf</code> (uso esterno, non in app)  </li>
+<li><input checked="" disabled="" type="checkbox"> MAN DOWN: no apertura Messaggi; retry solo con rete  </li>
+<li><input disabled="" type="checkbox"> Informativa HTML: Twilio + formato SMS — <strong>[DA REDIGERE col legale]</strong></li>
+</ul>
+<hr>
+<h2>Parte F — Misure di sicurezza (sintesi tecnica)</h2>
+<table>
+<thead>
+<tr>
+<th>Misura</th>
+<th>Dettaglio</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trasporto</td>
+<td>HTTPS</td>
+</tr>
+<tr>
+<td>Accesso DB utente</td>
+<td>Row Level Security (solo propri dati)</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>Supabase Auth, password non in chiaro</td>
+</tr>
+<tr>
+<td>PIN medico</td>
+<td>Hash per account su EncryptedSharedPreferences</td>
+</tr>
+<tr>
+<td>Ricordami</td>
+<td>Email/password cifrate localmente (opzionale)</td>
+</tr>
+<tr>
+<td>SMS MAN DOWN</td>
+<td>SIM → Twilio (<code>geoHELP</code>) → retry rete; formato compatto; Help solo Messaggi/SIM</td>
+</tr>
+<tr>
+<td>Log SMS server</td>
+<td><code>sms_events</code>, RLS; nessun testo messaggio</td>
+</tr>
+<tr>
+<td>Secret Twilio</td>
+<td>Solo Supabase Edge Functions Secrets, non nell’app</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td>Service role <strong>non</strong> nel client mobile; gestione SOS con PIN in app dev</td>
+</tr>
+</tbody></table>
+<p><strong>Rischio residuo da dichiarare:</strong> team admin può leggere <code>medical_data</code> in chiaro per soccorso/supporto (come da consenso).</p>
+<hr>
+<h2>Parte G — Diritti dell’interessato (bozza operativa)</h2>
+<table>
+<thead>
+<tr>
+<th>Diritto</th>
+<th>Come l’utente può esercitarlo oggi</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Accesso / rettifica</td>
+<td>Modifica profilo; dati medici in app</td>
+<td>Export strutturato <strong>[opzionale]</strong></td>
+</tr>
+<tr>
+<td>Revoca consenso</td>
+<td>«Consensi e privacy»</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Cancellazione</td>
+<td><strong>[DA IMPLEMENTARE]</strong> richiesta a [email]</td>
+<td>Procedura manuale possibile interim</td>
+</tr>
+<tr>
+<td>Portabilità</td>
+<td><strong>[DA DEFINIRE]</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Reclamo Garante</td>
+<td><a href="http://www.garanteprivacy.it">www.garanteprivacy.it</a></td>
+<td>Citare in informativa</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Parte H — Versioning e modifiche future</h2>
+<ul>
+<li>Ogni consenso salvato con <code>version = v1</code> e timestamp <code>accepted_at</code>.  </li>
+<li>Modifica sostanziale informativa → <code>v2</code> + nuova accettazione in <code>ConsentsScreen</code>.  </li>
+<li>Storico <code>consents</code> <strong>immutabile</strong> (solo insert).</li>
+</ul>
+<hr>
+<h2>Appendice — Riferimenti file progetto</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Descrizione</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>docs/informativa-privacy-struttura-v1.md</code></td>
+<td>Struttura dettagliata §0–§15</td>
+</tr>
+<tr>
+<td><code>app/src/main/assets/privacy/privacy_v1_*.html</code></td>
+<td>Informativa mostrata in app</td>
+</tr>
+<tr>
+<td><code>supabase/schema.sql</code></td>
+<td>Schema DB e RLS</td>
+</tr>
+<tr>
+<td><code>supabase/migrations/0010_sms_events.sql</code></td>
+<td>Tabella log SMS</td>
+</tr>
+<tr>
+<td><code>supabase/migrations/0011_sos_recipients_admin_manage.sql</code></td>
+<td>Flag admin SOS</td>
+</tr>
+<tr>
+<td><code>supabase/migrations/0012_profiles_user_phone.sql</code></td>
+<td>Tel. utente obbligatorio</td>
+</tr>
+<tr>
+<td><code>supabase/functions/send-mandown-sms/</code></td>
+<td>Edge Function Twilio</td>
+</tr>
+<tr>
+<td><code>docs/TWILIO-SETUP.md</code></td>
+<td>Setup e test Twilio / telefono</td>
+</tr>
+<tr>
+<td><code>docs/SMS-FORMATO-COMPATTO.md</code> / <code>.pdf</code></td>
+<td>Legenda SMS compatto per team SOS</td>
+</tr>
+<tr>
+<td><code>app/.../mandown/ManDownTwilioRepository.kt</code></td>
+<td>Client fallback Twilio</td>
+</tr>
+<tr>
+<td><code>app/.../ConsentsRepository.kt</code></td>
+<td>Logica consensi</td>
+</tr>
+<tr>
+<td><code>app/.../data/sms/SmsEventsRepository.kt</code></td>
+<td>Scrittura log SMS</td>
+</tr>
+<tr>
+<td><code>app/.../strings.xml</code></td>
+<td>Testi UI consensi (IT)</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>Fine documento — bozza per revisione legale.</em></p>
+</body>
+</html>

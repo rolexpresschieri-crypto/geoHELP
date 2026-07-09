@@ -1,0 +1,26 @@
+=== APK RELEASE GeoHELP ===
+
+Prima volta (una sola volta):
+
+1. Esegui create-keystore.bat
+   - Inserisci una password per la keystore (ricordala)
+   - Inserisci nome/cognome o nome organizzazione
+   - Inserisci la password per la chiave (può essere uguale alla keystore)
+   - Si crea il file geohelp-release.keystore (conservalo e non condividerlo)
+
+2. Crea il file keystore.properties nella cartella geoHELP:
+   - Copia keystore.properties.example e rinominalo in keystore.properties
+   - Apri keystore.properties e sostituisci:
+     storePassword= la password della keystore
+     keyPassword= la password della chiave
+     keyAlias= geohelp  (lascia così)
+     storeFile= geohelp-release.keystore  (lascia così)
+   - Salva (non mettere keystore.properties su cloud/repository)
+
+3. Esegui build-release.bat
+   - Verrà creato app\build\outputs\apk\release\app-release.apk
+
+Prossime volte: esegui solo build-release.bat.
+
+Conserva in sicurezza: geohelp-release.keystore e le password.
+Senza la keystore non potrai aggiornare l’app su Play Store con la stessa firma.
