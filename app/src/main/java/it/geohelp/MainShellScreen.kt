@@ -41,8 +41,6 @@ fun MainShellScreen(
     onNeedPrivacyOnboarding: () -> Unit,
     onNeedProfileOnboarding: () -> Unit,
     onNeedManDownOnboarding: () -> Unit,
-    onSendPrimary: (String, String, String) -> Unit,
-    onSendBackup: (String, String, String) -> Unit,
     onLogout: () -> Unit,
     userDisplayName: String,
     userBirthYear: Int?,
@@ -54,8 +52,9 @@ fun MainShellScreen(
     hasMedicalConsent: Boolean,
     hasManDownConsentActive: Boolean,
     medicalSmsSummary: String,
-    onAdminLogoTap: () -> Unit,
+    canManageSosRecipients: Boolean,
     sosRecipientsExternalReloadKey: Int,
+    onSosRecipientsChanged: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -99,8 +98,6 @@ fun MainShellScreen(
     @Composable
     fun HelpTabContent(shellTab: Int) {
         HelpScreen(
-            onSendPrimary = onSendPrimary,
-            onSendBackup = onSendBackup,
             currentLanguage = currentLanguage,
             onLogout = onLogout,
             onBack = { onDestinationChange(MainDestination.HOME) },
@@ -114,7 +111,6 @@ fun MainShellScreen(
             hasMedicalConsent = hasMedicalConsent,
             hasManDownConsent = hasManDownConsentActive,
             medicalSmsSummary = medicalSmsSummary,
-            onAdminLogoTap = onAdminLogoTap,
             sosRecipientsExternalReloadKey = sosRecipientsExternalReloadKey,
             embeddedInShell = true,
             shellTab = shellTab,
@@ -200,6 +196,9 @@ fun MainShellScreen(
                         onManageConsents = onManageConsents,
                         onOpenMedical = onOpenMedical,
                         onBack = { onDestinationChange(MainDestination.HOME) },
+                        canManageSosRecipients = canManageSosRecipients,
+                        sosRecipientsReloadKey = sosRecipientsExternalReloadKey,
+                        onSosRecipientsChanged = onSosRecipientsChanged,
                     )
                 }
 

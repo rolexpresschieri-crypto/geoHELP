@@ -7,7 +7,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,9 +65,8 @@ fun SecretTextField(
             }
         },
         modifier = modifier,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = focusedContainerColor,
-            unfocusedContainerColor = unfocusedContainerColor,
+        colors = geoHelpOutlinedFieldColors(
+            containerColor = focusedContainerColor,
         ),
     )
 }

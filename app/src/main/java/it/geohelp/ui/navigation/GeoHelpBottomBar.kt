@@ -51,8 +51,12 @@ private val SosRed = Color(0xFFB71C1C)
 private val NavWhite = Color.White
 private val NavWhiteDim = Color(0xCCFFFFFF)
 private val SosCircleSize = 88.dp
-private val BarContentHeight = 52.dp
-private val BarBottomPadding = 6.dp
+private val BarContentHeight = 58.dp
+private val BarBottomPadding = 14.dp
+private val NavIconSize = 25.dp
+private val NavTrackingIconSize = 29.dp
+private val NavLabelSize = 11.5.sp
+private val NavLabelLineHeight = 12.5.sp
 
 @Composable
 fun GeoHelpBottomBar(
@@ -82,7 +86,7 @@ fun GeoHelpBottomBar(
                 .align(Alignment.BottomCenter)
                 .height(BarContentHeight)
                 .background(GreenDark)
-                .padding(horizontal = 6.dp, vertical = 4.dp),
+                .padding(horizontal = 6.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BottomNavSlot(
@@ -93,7 +97,7 @@ fun GeoHelpBottomBar(
                     Icon(
                         Icons.Default.Call,
                         contentDescription = contentDescCall112,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(NavIconSize),
                         tint = NavWhite,
                     )
                 },
@@ -108,7 +112,7 @@ fun GeoHelpBottomBar(
                         contentDescription = contentDescTracking,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(NavTrackingIconSize)
                             .clip(CircleShape),
                     )
                 },
@@ -122,7 +126,7 @@ fun GeoHelpBottomBar(
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = contentDescSettings,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(NavIconSize),
                         tint = NavWhite,
                     )
                 },
@@ -135,7 +139,7 @@ fun GeoHelpBottomBar(
                     Icon(
                         Icons.Default.Info,
                         contentDescription = contentDescInfo,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(NavIconSize),
                         tint = NavWhite,
                     )
                 },
@@ -156,7 +160,7 @@ fun GeoHelpBottomBar(
             Text(
                 text = tabSosLabel,
                 color = NavWhite,
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp,
             )
@@ -186,11 +190,11 @@ private fun RowScope.BottomNavSlot(
         }
         Text(
             text = label,
-            fontSize = 10.sp,
+            fontSize = NavLabelSize,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             color = if (selected) NavWhite else NavWhiteDim,
             maxLines = 2,
-            lineHeight = 11.sp,
+            lineHeight = NavLabelLineHeight,
             textAlign = TextAlign.Center,
         )
         if (selected) {

@@ -20,7 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -208,10 +208,7 @@ fun AuthScreen(
                                     imeAction = ImeAction.Next
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White,
-                                    unfocusedContainerColor = Color.White
-                                )
+                                colors = geoHelpOutlinedFieldColors(),
                             )
 
                             Spacer(modifier = Modifier.height(10.dp))

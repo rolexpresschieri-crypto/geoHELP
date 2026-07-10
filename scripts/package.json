@@ -5,10 +5,12 @@
   "scripts": {
     "privacy-pdf": "node gen-privacy-pdf.mjs",
     "sms-format-pdf": "node gen-sms-format-pdf.mjs",
-    "docs-pdf": "node gen-privacy-pdf.mjs && node gen-sms-format-pdf.mjs"
+    "user-guide-pdf": "node gen-user-guide-pdf.mjs",
+    "docs-pdf": "node gen-privacy-pdf.mjs && node gen-sms-format-pdf.mjs && node gen-user-guide-pdf.mjs"
   },
   "dependencies": {
     "marked": "^15.0.0",
-    "playwright": "^1.49.0"
+    "playwright": "^1.49.0",
+    "sharp": "^0.35.3"
   }
 }

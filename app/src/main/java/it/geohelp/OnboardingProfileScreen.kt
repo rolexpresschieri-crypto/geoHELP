@@ -21,9 +21,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import it.geohelp.ui.theme.geoHelpFilterChipColors
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -162,10 +162,7 @@ fun OnboardingProfileScreen(
                                     imeAction = ImeAction.Next
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White,
-                                    unfocusedContainerColor = Color.White
-                                )
+                                colors = geoHelpOutlinedFieldColors(),
                             )
 
                             Spacer(modifier = Modifier.height(14.dp))
@@ -189,10 +186,7 @@ fun OnboardingProfileScreen(
                                     imeAction = ImeAction.Next
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White,
-                                    unfocusedContainerColor = Color.White
-                                )
+                                colors = geoHelpOutlinedFieldColors(),
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -220,11 +214,7 @@ fun OnboardingProfileScreen(
                                         label = {
                                             Text(stringResourceForLocale(currentLanguage, labelRes))
                                         },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = Color(0xFFB71C1C),
-                                            selectedLabelColor = Color.White,
-                                            selectedLeadingIconColor = Color.White
-                                        )
+                                        colors = geoHelpFilterChipColors(),
                                     )
                                 }
                             }
@@ -275,10 +265,7 @@ fun OnboardingProfileScreen(
                                         imeAction = ImeAction.Next,
                                     ),
                                     modifier = Modifier.weight(1f),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedContainerColor = Color.White,
-                                        unfocusedContainerColor = Color.White,
-                                    ),
+                                    colors = geoHelpOutlinedFieldColors(),
                                 )
                             }
 
@@ -299,10 +286,7 @@ fun OnboardingProfileScreen(
                                     imeAction = ImeAction.Done
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White,
-                                    unfocusedContainerColor = Color.White
-                                )
+                                colors = geoHelpOutlinedFieldColors(),
                             )
 
                             if (errorMessage != null) {

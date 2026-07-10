@@ -77,29 +77,29 @@ fun HomeScreen(
             ) {
                 Text(
                     text = localized(R.string.home_project_line1),
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TitleBlue,
                     textAlign = TextAlign.Center,
-                    lineHeight = 19.sp,
+                    lineHeight = 20.sp,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = localized(R.string.home_project_line2),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TitleBlue,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = localized(R.string.home_project_line3),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = TitleBlue,
                     textAlign = TextAlign.Center,
                     lineHeight = 19.sp,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = localized(R.string.home_project_line3),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TitleBlue,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 18.sp,
                 )
                 Spacer(Modifier.height(16.dp))
                 Row(

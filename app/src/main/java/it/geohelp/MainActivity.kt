@@ -16,17 +16,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import it.geohelp.admin.AdminSosPinDialog
-import it.geohelp.admin.AdminSosRecipientsScreen
 import io.github.jan.supabase.auth.handleDeeplinks
 import it.geohelp.data.auth.AuthRepository
-import it.geohelp.data.supabase.Supabase
 import it.geohelp.data.consents.ConsentKeys
 import it.geohelp.data.consents.ConsentsRepository
 import it.geohelp.data.medical.MedicalData
 import it.geohelp.data.medical.MedicalDataRepository
 import it.geohelp.data.profile.Profile
 import it.geohelp.data.profile.ProfileRepository
+import it.geohelp.data.supabase.Supabase
 import it.geohelp.mandown.ManDownForegroundService
 import it.geohelp.privacy.PrivacyPolicyScreen
 import android.content.res.Configuration
@@ -106,8 +104,7 @@ class MainActivity : ComponentActivity() {
             var showProfileEditor by remember { mutableStateOf(false) }
             var showConsentsManager by remember { mutableStateOf(false) }
             var showPrivacyPolicy by remember { mutableStateOf(false) }
-            var showAdminSosPin by remember { mutableStateOf(false) }
-            var showAdminSos by remember { mutableStateOf(false) }
+            var canManageSosRecipients by remember { mutableStateOf(false) }
             var sosRecipientsReloadKey by remember { mutableIntStateOf(0) }
             var showPrivacyOnboarding by remember { mutableStateOf(false) }
             var showProfileOnboarding by remember { mutableStateOf(false) }
@@ -171,6 +168,7 @@ class MainActivity : ComponentActivity() {
                 userDisplayName = profile?.displayName.orEmpty()
                 userBirthYear = profile.toBirthYear()
                 userPhoneE164 = profile?.userPhone?.trim().orEmpty()
+                canManageSosRecipients = profile?.canManageSosRecipients == true
                 medicalSmsSummary = if (hasMedicalConsent) {
                     runCatching { medicalRepo.load().toSmsSummary() }.getOrDefault("")
                 } else {
@@ -203,17 +201,6 @@ class MainActivity : ComponentActivity() {
             }
 
             GeoHELPTheme {
-                if (showAdminSosPin) {
-                    AdminSosPinDialog(
-                        currentLanguage = currentLang,
-                        onDismiss = { showAdminSosPin = false },
-                        onSuccess = {
-                            showAdminSosPin = false
-                            showAdminSos = true
-                        },
-                    )
-                }
-
                 when {
                     showSplash -> SplashScreen(onDone = { showSplash = false })
 
@@ -292,14 +279,6 @@ class MainActivity : ComponentActivity() {
                         }
                     )
 
-                    showAdminSos -> AdminSosRecipientsScreen(
-                        currentLanguage = currentLang,
-                        onBack = {
-                            showAdminSos = false
-                            sosRecipientsReloadKey++
-                        },
-                    )
-
                     else -> MainShellScreen(
                         currentLanguage = currentLang,
                         destination = shellDestination,
@@ -320,8 +299,6 @@ class MainActivity : ComponentActivity() {
                         onNeedPrivacyOnboarding = { showPrivacyOnboarding = true },
                         onNeedProfileOnboarding = { showProfileOnboarding = true },
                         onNeedManDownOnboarding = { showManDownOnboarding = true },
-                        onSendPrimary = { _: String, _: String, _: String -> },
-                        onSendBackup = { _: String, _: String, _: String -> },
                         onLogout = {
                             scope.launch {
                                 runCatching { ManDownForegroundService.disarm(this@MainActivity) }
@@ -335,6 +312,7 @@ class MainActivity : ComponentActivity() {
                                 userDisplayName = ""
                                 userBirthYear = null
                                 userPhoneE164 = ""
+                                canManageSosRecipients = false
                                 medicalSmsSummary = ""
                                 showMedical = false
                                 shellDestinationName = MainDestination.HOME.name
@@ -350,8 +328,9 @@ class MainActivity : ComponentActivity() {
                         hasMedicalConsent = hasMedicalConsent,
                         hasManDownConsentActive = hasManDownConsent,
                         medicalSmsSummary = medicalSmsSummary,
-                        onAdminLogoTap = { showAdminSosPin = true },
+                        canManageSosRecipients = canManageSosRecipients,
                         sosRecipientsExternalReloadKey = sosRecipientsReloadKey,
+                        onSosRecipientsChanged = { sosRecipientsReloadKey++ },
                     )
                 }
             }

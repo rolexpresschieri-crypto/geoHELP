@@ -16,8 +16,7 @@
     <string name="fill_required">Select an emergency type.</string>
     <string name="fill_required_profile">Complete your profile: name and mobile (+39) to send SMS and use MAN DOWN.</string>
     <string name="sms_label_user_phone">User phone</string>
-    <string name="send_sms_primary">SEND PRIMARY SMS</string>
-    <string name="send_sms_backup">SEND BACKUP SMS</string>
+    <string name="send_sms">SEND SMS</string>
     <string name="sms_label_name">Name</string>
     <string name="sms_label_born">Born</string>
     <string name="sms_label_request">Request</string>
@@ -367,16 +366,18 @@
     <string name="info_webcam_tile_title">WEBCAM VIALATTEA</string>
     <string name="content_desc_webcam_vialattea">Webcam Via Lattea logo — open website</string>
     <string name="info_official_sources_block">Institutional sources\nPiedmont Region:\nhttps://www.regione.piemonte.it/\n\nPatron municipality and consortium websites (Sestriere, Cesana Torinese, Consorzio Turismo Sestriere) are available from the icons at the bottom of the main screen.\n\nOther links (third-party sites, not public authorities)\nVia Lattea ski area:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (AED map):\nhttps://www.daedove.it/\n\nmeteo.it weather: third-party service; in-app shortcut; use Municipality or Region sites for official information.</string>
-    <string name="admin_sos_title">SOS recipients</string>
+    <string name="admin_sos_title">SOS SMS recipients</string>
     <string name="admin_sos_back">Back</string>
-    <string name="admin_sos_hint">Checked = active for SMS and MAN DOWN. Uncheck to exclude your number from tests (active = false in Supabase).</string>
-    <string name="admin_sos_error">Could not load or save. Check that your account is enabled as admin in Supabase.</string>
-    <string name="admin_sos_role_primary">Primary</string>
-    <string name="admin_sos_role_backup">Backup</string>
-    <string name="admin_sos_pin_title">Administrator access</string>
-    <string name="admin_sos_pin_hint">Password</string>
-    <string name="admin_sos_pin_ok">Open</string>
+    <string name="admin_sos_hint">Up to 3 numbers. Active = included in SEND SMS and MAN DOWN. Changes are saved to Supabase.</string>
+    <string name="admin_sos_error">Could not load or save. Check can_manage_sos_recipients on your profile.</string>
+    <string name="admin_sos_label">Label (optional)</string>
+    <string name="admin_sos_phone">Mobile number</string>
+    <string name="admin_sos_active">Active</string>
+    <string name="admin_sos_save">Save</string>
+    <string name="admin_sos_add">Add number</string>
+    <string name="admin_sos_max_reached">Maximum 3 recipients.</string>
+    <string name="admin_sos_delete_title">Delete this number?</string>
+    <string name="admin_sos_delete_msg">The number will be removed from Supabase.</string>
+    <string name="admin_sos_delete_confirm">Delete</string>
     <string name="admin_sos_pin_cancel">Cancel</string>
-    <string name="admin_sos_pin_wrong">Wrong password</string>
-    <string name="admin_sos_pin_not_configured">PIN not set: add SOS_ADMIN_PIN to local.properties and rebuild.</string>
 </resources>

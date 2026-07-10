@@ -3,6 +3,9 @@ package it.geohelp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import it.geohelp.admin.SosRecipientsAdminSection
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,9 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -108,6 +109,9 @@ fun SettingsScreen(
     onManageConsents: () -> Unit,
     onOpenMedical: () -> Unit,
     onBack: () -> Unit,
+    canManageSosRecipients: Boolean = false,
+    sosRecipientsReloadKey: Int = 0,
+    onSosRecipientsChanged: () -> Unit = {},
 ) {
     val context = LocalContext.current
     fun localized(resId: Int): String =
@@ -118,6 +122,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -163,6 +168,15 @@ fun SettingsScreen(
                 onClick = onOpenMedical,
                 containerColor = highlightedBoxColor,
             )
+            if (canManageSosRecipients) {
+                Spacer(Modifier.height(12.dp))
+                SosRecipientsAdminSection(
+                    currentLanguage = currentLanguage,
+                    reloadKey = sosRecipientsReloadKey,
+                    onRecipientsChanged = onSosRecipientsChanged,
+                )
+                Spacer(Modifier.height(16.dp))
+            }
         }
     }
 }

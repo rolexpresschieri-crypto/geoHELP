@@ -78,6 +78,7 @@ import it.geohelp.ui.components.PatronageFooter
 import it.geohelp.ui.components.ProminentDisclosureDialog
 import it.geohelp.ui.components.ScrollDownHint
 import it.geohelp.ui.theme.GeoHelpBackground
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.runtime.rememberCoroutineScope
 
 
@@ -312,27 +313,18 @@ private suspend fun loadSosRecipientsFromGoogleSheet(): Pair<List<String>, Strin
 }
 
 /** Supabase `sos_recipients` (fonte ufficiale); fallback sul foglio Google. */
-private suspend fun loadSosRecipients(): Pair<List<String>, String> {
+private suspend fun loadActiveSosRecipientPhones(): List<String> {
     try {
-        val rows = SosRecipientsRepository().listActive()
-        val primaries = rows
-            .filter { it.isPrimary }
-            .map { it.phone.trim() }
-            .filter { it.any(Char::isDigit) }
-            .distinct()
-            .take(2)
-        val backup = rows
-            .firstOrNull { it.isBackup }
-            ?.phone
-            ?.trim()
-            .orEmpty()
-        if (primaries.isNotEmpty()) {
-            return primaries to backup
-        }
+        val phones = SosRecipientsRepository().listActivePhones(SosRecipientsRepository.MAX_RECIPIENTS)
+        if (phones.isNotEmpty()) return phones
     } catch (_: Exception) {
         // rete / RLS / non loggato → fallback
     }
-    return loadSosRecipientsFromGoogleSheet()
+    val (legacyPrimaries, legacyBackup) = loadSosRecipientsFromGoogleSheet()
+    return buildList {
+        legacyPrimaries.filter { it.any(Char::isDigit) }.distinct().take(2).forEach { add(it) }
+        legacyBackup.takeIf { it.any(Char::isDigit) && it !in this }?.let { add(it) }
+    }.take(SosRecipientsRepository.MAX_RECIPIENTS).ifEmpty { listOf("112") }
 }
 
 private fun getStringForLocale(context: Context, locale: String, resId: Int): String {
@@ -366,8 +358,6 @@ private fun LocationValueRow(label: String, value: String) {
 
 @Composable
 fun HelpScreen(
-    onSendPrimary: (String, String, String) -> Unit,
-    onSendBackup: (String, String, String) -> Unit,
     onLanguageSelected: (String) -> Unit = {},
     currentLanguage: String = "it",
     onLogout: () -> Unit = {},
@@ -382,9 +372,7 @@ fun HelpScreen(
     hasMedicalConsent: Boolean = false,
     hasManDownConsent: Boolean = false,
     medicalSmsSummary: String = "",
-    /** Tap sul logo HELP → schermata admin (gestita da MainActivity). */
-    onAdminLogoTap: () -> Unit = {},
-    /** Incrementare dopo modifica destinatari SOS in admin. */
+    /** Incrementare dopo modifica destinatari SOS in Impostazioni. */
     sosRecipientsExternalReloadKey: Int = 0,
     embeddedInShell: Boolean = false,
     shellTab: Int = 0,
@@ -430,12 +418,9 @@ fun HelpScreen(
     var longitude by remember { mutableStateOf<String?>(null) }
     var altitude by remember { mutableStateOf<String?>(null) }
     var accuracy by remember { mutableStateOf<Float?>(null) }
-    /** Fino a 2 numeri primari (stesso messaggio, destinatari multipli nell’intent SMS). */
-    var primaryRecipients by remember { mutableStateOf(listOf("112")) }
-    /** Vuoto = nessun backup configurato (pulsante backup disattivato). */
-    var backupNumber by remember { mutableStateOf("112") }
+    /** Fino a 3 numeri attivi (stesso messaggio, destinatari multipli nell’intent SMS). */
+    var activeRecipients by remember { mutableStateOf(listOf("112")) }
     var showDisclaimer by remember { mutableStateOf(false) }
-    var pendingSmsPrimary by remember { mutableStateOf(false) } // true = primario, false = backup
     val context = LocalContext.current
     val profileReadyForSos = userDisplayName.isNotBlank() && userPhoneE164.isNotBlank()
 
@@ -451,9 +436,7 @@ fun HelpScreen(
     var sosRecipientsReloadKey by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(sosRecipientsReloadKey, sosRecipientsExternalReloadKey) {
-        val (primaries, backup) = loadSosRecipients()
-        primaryRecipients = primaries
-        backupNumber = backup
+        activeRecipients = loadActiveSosRecipientPhones()
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -476,18 +459,12 @@ fun HelpScreen(
     }
 
     fun buildManDownSmsDestinationsCsv(): String {
-        val dest = mutableListOf<String>()
-        primaryRecipients
+        val dest = activeRecipients
             .map { it.trim() }
             .filter { it.any(Char::isDigit) }
             .distinct()
-            .take(2)
-            .forEach { dest.add(it) }
-        val backup = backupNumber.trim()
-        if (backup.any(Char::isDigit) && backup !in dest) {
-            dest.add(backup)
-        }
-        return (if (dest.isEmpty()) listOf("112") else dest).take(3).joinToString(",")
+            .take(SosRecipientsRepository.MAX_RECIPIENTS)
+        return (if (dest.isEmpty()) listOf("112") else dest).joinToString(",")
     }
 
     fun armManDownService() {
@@ -680,7 +657,7 @@ fun HelpScreen(
     }
 
 
-    fun sendSms(primary: Boolean) {
+    fun sendSms() {
         val hasPermission = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -716,22 +693,13 @@ fun HelpScreen(
             hasMedicalConsent = hasMedicalConsent,
             medicalSmsSummary = medicalSmsSummary,
         )
-        val number = if (primary) {
-            primaryRecipients.filter { it.any(Char::isDigit) }.distinct().take(2)
-                .joinToString(",")
-                .ifBlank { "112" }
-        } else {
-            backupNumber.trim()
-        }
-        if (!primary && number.isBlank()) {
-            Toast.makeText(
-                context,
-                getStringForLocale(context, currentLanguage, R.string.toast_no_backup_configured),
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-        val smsto = number.replace(',', ';')
+        val numbers = activeRecipients
+            .map { it.trim() }
+            .filter { it.any(Char::isDigit) }
+            .distinct()
+            .take(SosRecipientsRepository.MAX_RECIPIENTS)
+        val recipients = if (numbers.isEmpty()) listOf("112") else numbers
+        val smsto = recipients.joinToString(";")
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$smsto")).apply {
             putExtra("sms_body", message)
             putExtra(Intent.EXTRA_TEXT, message)
@@ -742,11 +710,6 @@ fun HelpScreen(
             intent.data = Uri.parse("sms:$smsto")
         }
         context.startActivity(intent)
-        val destCount = if (primary) {
-            primaryRecipients.filter { it.any(Char::isDigit) }.distinct().size.coerceAtLeast(1)
-        } else {
-            1
-        }
         val code = emergencyCode
         if (code != null && EmergencyTypeCatalog.isValidManualCode(code)) {
             scope.launch {
@@ -755,8 +718,8 @@ fun HelpScreen(
                     messageKind = SmsEventKeys.KIND_PREPARED,
                     emergencyType = code,
                     outcome = SmsEventKeys.OUTCOME_OK,
-                    destCount = destCount,
-                    recipientRole = if (primary) SmsEventKeys.ROLE_PRIMARY else SmsEventKeys.ROLE_BACKUP,
+                    destCount = recipients.size,
+                    recipientRole = SmsEventKeys.ROLE_PRIMARY,
                 )
             }
         }
@@ -847,8 +810,7 @@ fun HelpScreen(
                             tint = Color.Unspecified,
                             modifier = Modifier
                                 .size(96.dp)
-                                .padding(top = 4.dp)
-                                .clickable { onAdminLogoTap() },
+                                .padding(top = 4.dp),
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
@@ -1078,12 +1040,10 @@ fun HelpScreen(
                         .fillMaxWidth()
                         .height(80.dp),
                     maxLines = 3,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = inputSurfaceColor,
-                        unfocusedContainerColor = inputSurfaceColor,
-                        disabledContainerColor = inputSurfaceColor,
+                    colors = geoHelpOutlinedFieldColors(
+                        containerColor = inputSurfaceColor,
                         focusedBorderColor = inputBorderColor,
-                        unfocusedBorderColor = inputBorderColor
+                        unfocusedBorderColor = inputBorderColor,
                     )
                 )
                 Spacer(Modifier.height(28.dp))
@@ -1226,7 +1186,6 @@ fun HelpScreen(
                             Toast.makeText(context, fillRequiredEmergency, Toast.LENGTH_LONG).show()
                             return@Button
                         }
-                        pendingSmsPrimary = true
                         requestLocationWithDisclosure { showDisclaimer = true }
                     },
                     modifier = Modifier
@@ -1242,41 +1201,7 @@ fun HelpScreen(
                         contentDescription = null
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResourceForLocale(currentLanguage, R.string.send_sms_primary))
-                }
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = {
-                        if (!profileReadyForSos) {
-                            Toast.makeText(context, fillRequiredProfile, Toast.LENGTH_LONG).show()
-                            return@OutlinedButton
-                        }
-                        if (emergencyCode.isNullOrBlank()) {
-                            Toast.makeText(context, fillRequiredEmergency, Toast.LENGTH_LONG).show()
-                            return@OutlinedButton
-                        }
-                        pendingSmsPrimary = false
-                        requestLocationWithDisclosure { showDisclaimer = true }
-                    },
-                    enabled = backupNumber.isNotBlank(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(999.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, inputBorderColor),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = inputSurfaceColor,
-                        contentColor = Color(0xFF37474F),
-                        disabledContainerColor = inputSurfaceColor,
-                        disabledContentColor = Color(0xFF9E9E9E)
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Chat,
-                        contentDescription = null
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResourceForLocale(currentLanguage, R.string.send_sms_backup))
+                    Text(stringResourceForLocale(currentLanguage, R.string.send_sms))
                 }
                         }
                             if (showScrollHint) {
@@ -1834,7 +1759,7 @@ fun HelpScreen(
                         Button(
                             onClick = {
                                 showDisclaimer = false
-                                sendSms(pendingSmsPrimary)
+                                sendSms()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White)
                         ) {

@@ -24,9 +24,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import it.geohelp.ui.theme.geoHelpFilterChipColors
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -826,10 +826,7 @@ private fun FormField(
         singleLine = singleLine,
         minLines = if (singleLine) 1 else 2,
         modifier = Modifier.fillMaxWidth(),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
-        )
+        colors = geoHelpOutlinedFieldColors()
     )
 }
 
@@ -890,10 +887,7 @@ private fun BloodGroupChipRow(
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFFB71C1C),
-                    selectedLabelColor = Color.White,
-                ),
+                colors = geoHelpFilterChipColors(),
                 modifier = Modifier.weight(1f)
             )
         }

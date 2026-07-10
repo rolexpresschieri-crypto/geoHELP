@@ -27,6 +27,7 @@ data class Profile(
     @SerialName("emergency_contact_name")  val emergencyContactName: String? = null,
     @SerialName("emergency_contact_phone") val emergencyContactPhone: String? = null,
     @SerialName("preferred_language") val preferredLanguage: String = "it",
+    @SerialName("can_manage_sos_recipients") val canManageSosRecipients: Boolean = false,
 ) {
     /** Solo il nome di battesimo: usato negli SMS / UI. Vuoto se non compilato. */
     val displayName: String

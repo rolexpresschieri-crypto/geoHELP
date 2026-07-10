@@ -5,24 +5,27 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,13 +39,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
 import it.geohelp.R
-import it.geohelp.ui.components.SecretTextField
 import it.geohelp.data.supabase.SosRecipient
 import it.geohelp.data.supabase.SosRecipientsRepository
-import it.geohelp.ui.theme.GeoHelpBackground
+import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import kotlinx.coroutines.launch
 
 private fun getStringForLocale(context: Context, locale: String, resId: Int): String {
@@ -58,11 +62,11 @@ private fun stringResourceForLocale(locale: String, resId: Int): String {
     return remember(locale, resId) { getStringForLocale(context, locale, resId) }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminSosRecipientsScreen(
+fun SosRecipientsAdminSection(
     currentLanguage: String,
-    onBack: () -> Unit,
+    reloadKey: Int = 0,
+    onRecipientsChanged: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val repo = remember { SosRecipientsRepository() }
@@ -70,6 +74,8 @@ fun AdminSosRecipientsScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var rows by remember { mutableStateOf<List<SosRecipient>>(emptyList()) }
     val savingIds = remember { mutableStateMapOf<Long, Boolean>() }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var deleteTarget by remember { mutableStateOf<SosRecipient?>(null) }
 
     fun reload() {
         scope.launch {
@@ -85,242 +91,311 @@ fun AdminSosRecipientsScreen(
         }
     }
 
-    LaunchedEffect(Unit) { reload() }
+    LaunchedEffect(reloadKey) { reload() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_title))
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResourceForLocale(
-                                currentLanguage,
-                                R.string.admin_sos_back,
-                            ),
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFB71C1C),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                ),
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White.copy(alpha = 0.92f),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(
+                text = stringResourceForLocale(currentLanguage, R.string.admin_sos_title),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF1B1B1B),
             )
-        },
-    ) { padding ->
-        GeoHelpBackground(imageAlpha = 0.38f, overlayAlpha = 0.45f) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                color = Color.Transparent,
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = stringResourceForLocale(currentLanguage, R.string.admin_sos_hint),
+                fontSize = 13.sp,
+                color = Color(0xFF424242),
+            )
+            Spacer(Modifier.height(10.dp))
+            when {
+                loading -> {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        CircularProgressIndicator(color = Color(0xFFB71C1C))
+                    }
+                }
+                error != null -> {
                     Text(
-                        text = stringResourceForLocale(currentLanguage, R.string.admin_sos_hint),
+                        text = stringResourceForLocale(currentLanguage, R.string.admin_sos_error),
+                        color = Color(0xFFB71C1C),
+                        fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
-                        color = Color(0xFF1B1B1B),
-                        modifier = Modifier.padding(bottom = 12.dp),
                     )
-                    when {
-                        loading -> {
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                CircularProgressIndicator(color = Color(0xFFB71C1C))
-                            }
-                        }
-                        error != null -> {
-                            Text(
-                                text = stringResourceForLocale(
-                                    currentLanguage,
-                                    R.string.admin_sos_error,
-                                ),
-                                color = Color(0xFFB71C1C),
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                        else -> {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                rows.forEach { row ->
-                                    val id = row.id ?: return@forEach
-                                    AdminSosRow(
-                                        currentLanguage = currentLanguage,
-                                        row = row,
-                                        saving = savingIds[id] == true,
-                                        onActiveChange = { active ->
-                                            if (savingIds[id] == true) return@AdminSosRow
-                                            savingIds[id] = true
-                                            scope.launch {
-                                                runCatching { repo.setActive(id, active) }
-                                                    .onSuccess {
-                                                        rows = rows.map {
-                                                            if (it.id == id) it.copy(active = active) else it
-                                                        }
-                                                    }
-                                                    .onFailure {
-                                                        error = it.message
-                                                    }
-                                                savingIds[id] = false
+                }
+                else -> {
+                    rows.forEach { row ->
+                        val id = row.id ?: return@forEach
+                        SosRecipientAdminRow(
+                            currentLanguage = currentLanguage,
+                            row = row,
+                            saving = savingIds[id] == true,
+                            onActiveChange = { active ->
+                                if (savingIds[id] == true) return@SosRecipientAdminRow
+                                savingIds[id] = true
+                                scope.launch {
+                                    runCatching { repo.setActive(id, active) }
+                                        .onSuccess {
+                                            rows = rows.map {
+                                                if (it.id == id) it.copy(active = active) else it
                                             }
-                                        },
-                                    )
+                                            onRecipientsChanged()
+                                        }
+                                        .onFailure { error = it.message }
+                                    savingIds[id] = false
                                 }
-                            }
+                            },
+                            onSave = { label, phone ->
+                                if (savingIds[id] == true) return@SosRecipientAdminRow
+                                savingIds[id] = true
+                                scope.launch {
+                                    runCatching {
+                                        repo.update(
+                                            id = id,
+                                            label = label,
+                                            phone = phone,
+                                            active = row.active,
+                                            sortOrder = row.sortOrder ?: 0,
+                                        )
+                                    }
+                                        .onSuccess {
+                                            rows = rows.map {
+                                                if (it.id == id) {
+                                                    it.copy(label = label, phone = phone)
+                                                } else {
+                                                    it
+                                                }
+                                            }
+                                            onRecipientsChanged()
+                                        }
+                                        .onFailure { error = it.message }
+                                    savingIds[id] = false
+                                }
+                            },
+                            onDelete = { deleteTarget = row },
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    if (rows.size < SosRecipientsRepository.MAX_RECIPIENTS) {
+                        Button(
+                            onClick = { showAddDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D47A1)),
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_add))
                         }
+                    } else {
+                        Text(
+                            text = stringResourceForLocale(currentLanguage, R.string.admin_sos_max_reached),
+                            fontSize = 12.sp,
+                            color = Color(0xFF757575),
+                        )
                     }
                 }
             }
         }
     }
+
+    if (showAddDialog) {
+        SosRecipientEditDialog(
+            currentLanguage = currentLanguage,
+            title = stringResourceForLocale(currentLanguage, R.string.admin_sos_add),
+            initialLabel = "",
+            initialPhone = "",
+            onDismiss = { showAddDialog = false },
+            onConfirm = { label, phone ->
+                scope.launch {
+                    runCatching {
+                        repo.insert(
+                            label = label,
+                            phone = phone,
+                            sortOrder = (rows.maxOfOrNull { it.sortOrder ?: 0 } ?: 0) + 10,
+                        )
+                    }
+                        .onSuccess {
+                            showAddDialog = false
+                            reload()
+                            onRecipientsChanged()
+                        }
+                        .onFailure { error = it.message }
+                }
+            },
+        )
+    }
+
+    deleteTarget?.let { target ->
+        val id = target.id
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = {
+                Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_delete_title))
+            },
+            text = {
+                Text(
+                    stringResourceForLocale(currentLanguage, R.string.admin_sos_delete_msg),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (id == null) {
+                            deleteTarget = null
+                            return@TextButton
+                        }
+                        scope.launch {
+                            runCatching { repo.delete(id) }
+                                .onSuccess {
+                                    deleteTarget = null
+                                    reload()
+                                    onRecipientsChanged()
+                                }
+                                .onFailure { error = it.message }
+                        }
+                    },
+                ) {
+                    Text(
+                        stringResourceForLocale(currentLanguage, R.string.admin_sos_delete_confirm),
+                        color = Color(0xFFB71C1C),
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) {
+                    Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable
-private fun AdminSosRow(
+private fun SosRecipientAdminRow(
     currentLanguage: String,
     row: SosRecipient,
     saving: Boolean,
     onActiveChange: (Boolean) -> Unit,
+    onSave: (String?, String) -> Unit,
+    onDelete: () -> Unit,
 ) {
-    val roleLabel = when {
-        row.isPrimary -> stringResourceForLocale(currentLanguage, R.string.admin_sos_role_primary)
-        row.isBackup -> stringResourceForLocale(currentLanguage, R.string.admin_sos_role_backup)
-        else -> row.role
-    }
+    var label by remember(row.id, row.label) { mutableStateOf(row.label.orEmpty()) }
+    var phone by remember(row.id, row.phone) { mutableStateOf(row.phone) }
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White.copy(alpha = 0.92f),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+        color = Color(0xFFF5F5F5),
+        shape = RoundedCornerShape(10.dp),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = row.label?.trim().orEmpty().ifBlank { roleLabel },
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
-                )
-                Text(text = row.phone, fontSize = 14.sp, color = Color(0xFF424242))
-                Text(
-                    text = roleLabel,
-                    fontSize = 12.sp,
-                    color = Color(0xFF757575),
-                )
-            }
-            Checkbox(
-                checked = row.active,
-                onCheckedChange = { onActiveChange(it) },
-                enabled = !saving,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFFB71C1C),
-                ),
+        Column(modifier = Modifier.padding(10.dp)) {
+            OutlinedTextField(
+                value = label,
+                onValueChange = { label = it },
+                label = { Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = geoHelpOutlinedFieldColors(),
             )
+            Spacer(Modifier.height(6.dp))
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_phone)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth(),
+                colors = geoHelpOutlinedFieldColors(),
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = row.active,
+                    onCheckedChange = onActiveChange,
+                    enabled = !saving,
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFFB71C1C)),
+                )
+                Text(
+                    text = stringResourceForLocale(currentLanguage, R.string.admin_sos_active),
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = { onSave(label, phone) },
+                    enabled = !saving && phone.any(Char::isDigit),
+                ) {
+                    Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_save))
+                }
+                IconButton(onClick = onDelete, enabled = !saving) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResourceForLocale(
+                            currentLanguage,
+                            R.string.admin_sos_delete_confirm,
+                        ),
+                        tint = Color(0xFFB71C1C),
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AdminSosPinDialog(
+private fun SosRecipientEditDialog(
     currentLanguage: String,
+    title: String,
+    initialLabel: String,
+    initialPhone: String,
     onDismiss: () -> Unit,
-    onSuccess: () -> Unit,
+    onConfirm: (String?, String) -> Unit,
 ) {
-    val context = LocalContext.current
-    val wrongPinMsg = remember(currentLanguage) {
-        getStringForLocale(context, currentLanguage, R.string.admin_sos_pin_wrong)
-    }
-    var pin by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
+    var label by remember { mutableStateOf(initialLabel) }
+    var phone by remember { mutableStateOf(initialPhone) }
 
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_title))
-        },
+        title = { Text(title) },
         text = {
             Column {
-                if (!AdminSosPin.isConfigured()) {
-                    Text(
-                        stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_not_configured),
-                        color = Color(0xFFB71C1C),
-                    )
-                } else {
-                    Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_hint))
-                    SecretTextField(
-                        value = pin,
-                        onValueChange = {
-                            pin = it
-                            error = null
-                        },
-                        label = stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_title),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        visibilityToggleDescription = getStringForLocale(
-                            context,
-                            currentLanguage,
-                            R.string.content_desc_show_secret,
-                        ),
-                        showDescription = getStringForLocale(
-                            context,
-                            currentLanguage,
-                            R.string.content_desc_show_secret,
-                        ),
-                        hideDescription = getStringForLocale(
-                            context,
-                            currentLanguage,
-                            R.string.content_desc_hide_secret,
-                        ),
-                    )
-                    error?.let {
-                        Text(
-                            it,
-                            color = Color(0xFFB71C1C),
-                            modifier = Modifier.padding(top = 6.dp),
-                            fontSize = 13.sp,
-                        )
-                    }
-                }
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    label = { Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = geoHelpOutlinedFieldColors(),
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_phone)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = geoHelpOutlinedFieldColors(),
+                )
             }
         },
         confirmButton = {
-            androidx.compose.material3.TextButton(
-                onClick = {
-                    if (!AdminSosPin.isConfigured()) {
-                        onDismiss()
-                        return@TextButton
-                    }
-                    if (AdminSosPin.verify(pin)) {
-                        onSuccess()
-                    } else {
-                        error = wrongPinMsg
-                    }
-                },
-                enabled = AdminSosPin.isConfigured(),
+            TextButton(
+                onClick = { onConfirm(label, phone) },
+                enabled = phone.any(Char::isDigit),
             ) {
-                Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_ok))
+                Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_save))
             }
         },
         dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text(stringResourceForLocale(currentLanguage, R.string.admin_sos_pin_cancel))
             }
         },

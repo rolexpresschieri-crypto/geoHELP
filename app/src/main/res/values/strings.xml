@@ -16,8 +16,7 @@
     <string name="fill_required">Seleziona il tipo di emergenza.</string>
     <string name="fill_required_profile">Completa il profilo: nome e cellulare (+39) per inviare SMS e MAN DOWN.</string>
     <string name="sms_label_user_phone">Tel. utente</string>
-    <string name="send_sms_primary">INVIA SMS PRIMARIO</string>
-    <string name="send_sms_backup">INVIA SMS BACKUP</string>
+    <string name="send_sms">INVIA SMS</string>
     <string name="sms_label_name">Nominativo</string>
     <string name="sms_label_born">Nato</string>
     <string name="sms_label_request">Richiesta</string>
@@ -367,17 +366,19 @@
     <string name="info_webcam_tile_title">WEBCAM VIALATTEA</string>
     <string name="content_desc_webcam_vialattea">Logo Webcam Via Lattea — apri il sito</string>
     <string name="info_official_sources_block">Enti e fonti istituzionali\nRegione Piemonte:\nhttps://www.regione.piemonte.it/\n\nI siti dei Comuni patrocinatori (Sestriere, Cesana Torinese) e del Consorzio Turismo Sestriere sono raggiungibili dalle icone in basso nella schermata principale.\n\nAltri collegamenti (siti di terze parti, non sono enti pubblici)\nComprensorio Via Lattea:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (mappa defibrillatori):\nhttps://www.daedove.it/\n\nPrevisioni meteo.it: servizio di terze parti; link nell\'app; per informazioni ufficiali usare i siti dei Comuni o della Regione.</string>
-    <!-- Admin nascosto: tap logo HELP + PIN -->
-    <string name="admin_sos_title">Destinatari SOS</string>
+    <!-- Gestione destinatari SOS (solo can_manage_sos_recipients) -->
+    <string name="admin_sos_title">Destinatari SMS SOS</string>
     <string name="admin_sos_back">Indietro</string>
-    <string name="admin_sos_hint">Spunta = numero attivo per SMS e MAN DOWN. Togli la spunta per escluderti dai test (active = false su Supabase).</string>
-    <string name="admin_sos_error">Impossibile caricare o salvare. Verifica di essere abilitato come admin su Supabase.</string>
-    <string name="admin_sos_role_primary">Primario</string>
-    <string name="admin_sos_role_backup">Backup</string>
-    <string name="admin_sos_pin_title">Accesso amministratore</string>
-    <string name="admin_sos_pin_hint">Password</string>
-    <string name="admin_sos_pin_ok">Apri</string>
+    <string name="admin_sos_hint">Massimo 3 numeri. Attivo = incluso in INVIA SMS e MAN DOWN. Le modifiche vengono salvate su Supabase.</string>
+    <string name="admin_sos_error">Impossibile caricare o salvare. Verifica il flag can_manage_sos_recipients sul tuo profilo.</string>
+    <string name="admin_sos_label">Etichetta (opz.)</string>
+    <string name="admin_sos_phone">Numero cellulare</string>
+    <string name="admin_sos_active">Attivo</string>
+    <string name="admin_sos_save">Salva</string>
+    <string name="admin_sos_add">Aggiungi numero</string>
+    <string name="admin_sos_max_reached">Massimo 3 destinatari.</string>
+    <string name="admin_sos_delete_title">Eliminare il numero?</string>
+    <string name="admin_sos_delete_msg">Il numero verrà rimosso da Supabase.</string>
+    <string name="admin_sos_delete_confirm">Elimina</string>
     <string name="admin_sos_pin_cancel">Annulla</string>
-    <string name="admin_sos_pin_wrong">Password non corretta</string>
-    <string name="admin_sos_pin_not_configured">PIN non configurato: aggiungi SOS_ADMIN_PIN in local.properties e ricompila.</string>
 </resources>
