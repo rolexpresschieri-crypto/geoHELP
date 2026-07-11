@@ -22,9 +22,18 @@ object TrekTrailNavigation {
             putExtra(MapActivity.EXTRA_TRAIL_START_LON, trail.startLon)
             putExtra(
                 MapActivity.EXTRA_TRAIL_LABEL,
-                "${trail.sentieroNome} ${trail.sentieroNumero}".trim(),
+                if (trail.isWaypoint()) {
+                    trail.sentieroNome
+                } else {
+                    "${trail.sentieroNome} ${trail.sentieroNumero}".trim()
+                },
             )
-            trail.trkAsset?.let { putExtra(MapActivity.EXTRA_TRK_ASSET, it) }
+            if (trail.isWaypoint()) {
+                putExtra(MapActivity.EXTRA_IS_WAYPOINT, true)
+                trail.wpIconAsset?.let { putExtra(MapActivity.EXTRA_WP_ICON_ASSET, it) }
+            } else {
+                trail.trkAsset?.let { putExtra(MapActivity.EXTRA_TRK_ASSET, it) }
+            }
         }
     }
 }

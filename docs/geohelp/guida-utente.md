@@ -1,6 +1,6 @@
 # geoHELP — Guida rapida all’uso
 
-**Versione app:** 1.2.38 · **Lingue:** italiano / inglese
+**Versione app:** 1.2.45 · **Lingue:** italiano / inglese
 
 geoHELP è un’app di supporto in montagna (Alta Valsusa). **Non sostituisce il 112.** In pericolo immediato chiama sempre il **Numero Unico di Emergenza**.
 
@@ -20,31 +20,36 @@ geoHELP è un’app di supporto in montagna (Alta Valsusa). **Non sostituisce il
 
 ---
 
-## 2. Menu in basso (5 icone)
+## 2. Menu in basso
 
-Da sinistra a destra, più il **SOS** al centro:
+Barra verde con **SOS** rosso al centro. Da sinistra a destra:
 
 | Icona | Funzione |
 |-------|----------|
-| **Chiama 112** | Apre la chiamata al Numero Unico di Emergenza |
-| **Trekking** | Posizione GPS, mappa e sentieri da percorrere |
+| **Chiama 112** | Apre la chiamata al Numero Unico di Emergenza (due righe: «Chiama» / «112») |
+| **Trekking** | Posizione GPS, mappa, sentieri e P.O.I. |
 | **SOS** (rosso, al centro) | Schermata di richiesta aiuto (invio **manuale** SMS) |
-| **Impostazioni** | Lingua, consensi, profilo, dati medici, MAN DOWN |
+| **Set** | Profilo, consensi, dati medici, aiuto |
 | **Info** | Link utili (Via Lattea, meteo, webcam, DAE) |
+
+**Striscia blu ORDINANZE** (in basso a destra, sopra la barra verde): apre l’elenco delle **ordinanze turistiche** (PDF per comune). Visibile a **tutti**, anche senza login.
+
+**Barra Home** (in alto, quando sei loggato): torna alla schermata iniziale.
 
 ---
 
-## 3. Trekking (posizione e sentieri)
+## 3. Trekking (posizione, sentieri e P.O.I.)
 
 ### Schermata **Trekking**
 - Vedi **latitudine, longitudine**, precisione GPS e altitudine.
 - Pulsante **APRI SU MAPPA** → mappa a schermo intero.
 
-### Tabella sentieri
-- Sentieri raggruppati per **comune** (es. Sestriere, Cesana).
+### Tabella sentieri e P.O.I.
+- Sezione **Sentieri da percorrere e P.O.I.**, raggruppati per **comune** (es. Sestriere, Cesana).
 - **PDF** → scheda descrittiva del sentiero.
 - **TRACK** (giallo quando attivo) → apre la mappa con la traccia del sentiero.
-- Secondo tap su **TRACK** → disattiva la traccia.
+- **GO TO** (giallo) → sulla mappa punta verso un **P.O.I.** (punto di interesse).
+- Secondo tap su **TRACK** o **GO TO** → disattiva traccia o navigazione verso il P.O.I.
 
 ### Sulla mappa
 | Pulsante | Cosa fa |
@@ -57,11 +62,21 @@ Da sinistra a destra, più il **SOS** al centro:
 
 **In camminata:** tieni attivo il seguimento GPS (icona fissa). Se sposti la mappa col dito, il seguimento si disattiva: tocca di nuovo il pulsante GPS per ricentrarti.
 
-Con **TRACK** attivo vedi: traccia rossa del sentiero, linea blu verso l’inizio percorso, distanza in alto.
+Con **TRACK** attivo vedi: traccia rossa del sentiero, **linea blu** verso l’inizio percorso, distanza in alto. Con **GO TO** verso un P.O.I.: linea blu e **triangolo rosso** con il nome del punto.
 
 ---
 
-## 4. SOS — richiesta di aiuto (**invio manuale**)
+## 4. Ordinanze turistiche
+
+1. Tocca la striscia blu **ORDINANZE** (in basso a destra).
+2. Le ordinanze sono elencate per **comune**, dalla più recente.
+3. Tocca una riga → si apre il **PDF** nel browser o in un’app lettore PDF.
+
+Serve **connessione internet**. Se l’elenco è vuoto, non ci sono ordinanze pubblicate al momento.
+
+---
+
+## 5. SOS — richiesta di aiuto (**invio manuale**)
 
 > **SOS non invia** SMS da solo: prepara il messaggio e apre **Messaggi**; **devi premere tu INVIA**.
 
@@ -73,7 +88,7 @@ Con **TRACK** attivo vedi: traccia rossa del sentiero, linea blu verso l’inizi
 4. Si apre **Messaggi** con testo e **tutti i destinatari attivi** (fino a **3 numeri**) già compilati.
 5. **Controlla e premi INVIA** sul telefono.
 
-I numeri sono **gestiti dal servizio geoHELP** in Supabase (non li scegli tu nell’app). L’amministratore autorizzato può attivarli/disattivarli e modificarli da **Impostazioni**.
+I numeri sono **gestiti dal servizio geoHELP** (non li scegli tu nell’app).
 
 ### Cosa contiene l’SMS SOS
 
@@ -90,7 +105,7 @@ Serve **profilo compilato**, **GPS** attivo e l’app **Messaggi** funzionante. 
 
 ---
 
-## 5. MAN DOWN — rilevamento caduta (**unico invio automatico**)
+## 6. MAN DOWN — rilevamento caduta (**unico invio automatico**)
 
 > **Solo MAN DOWN può inviare automaticamente** SMS (via servizio geoHELP, senza aprire Messaggi).
 
@@ -106,7 +121,7 @@ In questi casi i sensori del telefono possono rilevare l’evento e avvisare i s
 
 ### Come funziona
 
-1. In **Impostazioni** accetta il consenso **MAN DOWN**.
+1. In **Set** accetta il consenso **MAN DOWN**.
 2. Nella schermata **SOS** premi **Attiva MAN DOWN** (resta in ascolto: compare una notifica).
 3. Se il telefono rileva una **caduta o urto** importante:
    - parte una **sirena** e un **conto alla rovescia di 60 secondi**;
@@ -127,9 +142,24 @@ Intestazione **«MAN DOWN geoHELP»**, con nome, telefono, **posizione GPS** (an
 
 ---
 
-## 6. Dati medici (opzionale)
+## 7. Set (impostazioni)
 
-- Attiva il consenso in **Impostazioni** (icona ingranaggio in basso).
+Dall’icona **Set** (ingranaggio) accedi a:
+
+| Voce | Cosa fa |
+|------|---------|
+| **Aiuto** | Apre la schermata SOS / MAN DOWN |
+| **Modifica profilo** | Nome, anno di nascita, telefono, contatto familiare |
+| **Consensi e privacy** | Privacy, dati medici, MAN DOWN |
+| **Dati medici** | Patologie, allergie, terapie (con PIN locale) |
+
+**Esci** dall’account dalla schermata iniziale (Home), se disponibile.
+
+---
+
+## 8. Dati medici (opzionale)
+
+- Attiva il consenso in **Set** → **Consensi e privacy**.
 - Crea un **PIN** (minimo 4 cifre) per proteggere l’accesso sul telefono.
 - Inserisci patologie, allergie, terapie, gruppo sanguigno, note.
 - In emergenza alcune informazioni possono essere incluse negli SMS.
@@ -138,7 +168,7 @@ Il PIN protegge solo l’accesso **sul dispositivo**; i dati sono salvati in mod
 
 ---
 
-## 7. Settaggi consigliati sul telefono
+## 9. Settaggi consigliati sul telefono
 
 **Android — controlla che:**
 
@@ -152,7 +182,7 @@ Il PIN protegge solo l’accesso **sul dispositivo**; i dati sono salvati in mod
 
 ---
 
-## 8. Lingua
+## 10. Lingua
 
 Dall’icona **bandiera** in alto puoi passare tra **italiano** e **inglese**.
 
@@ -166,6 +196,7 @@ Dall’icona **bandiera** in alto puoi passare tra **italiano** e **inglese**.
 | **geoHELP** | Supporto privato con patrocinio Comuni e Consorzio Turismo |
 | **SOS** | Invio **manuale** — tu premi INVIA in Messaggi |
 | **MAN DOWN** | Unico invio **automatico** se non annulli entro 60 s |
+| **ORDINANZE** | PDF informativi per comune (non sostituiscono fonti ufficiali) |
 | **Mappa / sentieri** | Aiuto all'orientamento, non sostituiscono carta e segnaletica |
 
 *Documento per utenti finali — geoHELP · Alta Valsusa*

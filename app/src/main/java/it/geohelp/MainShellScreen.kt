@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import it.geohelp.ui.components.ShellHomeTopBar
 import it.geohelp.ui.components.getStringForLocale
 import it.geohelp.ui.navigation.GeoHelpBottomBar
 import it.geohelp.ui.navigation.MainDestination
@@ -53,8 +54,11 @@ fun MainShellScreen(
     hasManDownConsentActive: Boolean,
     medicalSmsSummary: String,
     canManageSosRecipients: Boolean,
+    canManageOrdinances: Boolean,
     sosRecipientsExternalReloadKey: Int,
     onSosRecipientsChanged: () -> Unit,
+    ordinancesExternalReloadKey: Int,
+    onOrdinancesChanged: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -131,6 +135,12 @@ fun MainShellScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        if (isLoggedIn && destination != MainDestination.HOME) {
+            ShellHomeTopBar(
+                currentLanguage = currentLanguage,
+                onNavigateHome = { onDestinationChange(MainDestination.HOME) },
+            )
+        }
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -143,6 +153,10 @@ fun MainShellScreen(
                         showLogoutButton = isLoggedIn,
                         onLogout = onLogout,
                     )
+                }
+
+                destination == MainDestination.ORDINANCES -> {
+                    OrdinancesScreen(currentLanguage = currentLanguage)
                 }
 
                 destination in AuthGatedDestinations && !isLoggedIn -> {
@@ -197,8 +211,11 @@ fun MainShellScreen(
                         onOpenMedical = onOpenMedical,
                         onBack = { onDestinationChange(MainDestination.HOME) },
                         canManageSosRecipients = canManageSosRecipients,
+                        canManageOrdinances = canManageOrdinances,
                         sosRecipientsReloadKey = sosRecipientsExternalReloadKey,
                         onSosRecipientsChanged = onSosRecipientsChanged,
+                        ordinancesReloadKey = ordinancesExternalReloadKey,
+                        onOrdinancesChanged = onOrdinancesChanged,
                     )
                 }
 
@@ -222,11 +239,13 @@ fun MainShellScreen(
             tabTrackingLabel = localized(R.string.tab_tracking),
             tabSettingsLabel = localized(R.string.tab_settings),
             tabInfoLabel = localized(R.string.tab_info_title),
+            tabOrdinancesLabel = localized(R.string.tab_ordinances),
             contentDescCall112 = localized(R.string.content_desc_call_112),
             contentDescTracking = localized(R.string.content_desc_tracking),
             contentDescSettings = localized(R.string.content_desc_settings),
             contentDescInfo = localized(R.string.tab_info_title),
-            modifier = Modifier.padding(bottom = 4.dp),
+            contentDescOrdinances = localized(R.string.content_desc_ordinances),
+            modifier = Modifier,
         )
     }
 }

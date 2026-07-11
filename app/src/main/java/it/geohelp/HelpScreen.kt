@@ -69,7 +69,7 @@ import it.geohelp.data.sms.SmsEventKeys
 import it.geohelp.data.sms.SmsEventsRepository
 import it.geohelp.data.supabase.SosRecipientsRepository
 import it.geohelp.location.LocationPermissions
-import it.geohelp.trek.TrekTrailCatalog
+import it.geohelp.trek.TrekCatalog
 import it.geohelp.trek.TrekTrailNavigation
 import it.geohelp.trek.TrekTrailRow
 import it.geohelp.trek.TrekTrailSelectionStore
@@ -133,6 +133,7 @@ private fun TrekTrailsTable(
     val headerPdf = stringResourceForLocale(language, R.string.trek_table_header_pdf)
     val headerTrace = stringResourceForLocale(language, R.string.trek_table_header_trace)
     val traceLabel = stringResourceForLocale(language, R.string.trek_table_trace_btn)
+    val gotoLabel = stringResourceForLocale(language, R.string.trek_table_goto_btn)
     val pdfDesc = stringResourceForLocale(language, R.string.trek_table_pdf_desc)
 
     val grouped = remember(rows) { rows.groupBy { it.comune } }
@@ -200,7 +201,11 @@ private fun TrekTrailsTable(
 
                             Column(modifier = Modifier.weight(wSentiero)) {
                                 Text(
-                                    text = "${row.sentieroNome} ${row.sentieroNumero}".trim(),
+                                    text = if (row.isWaypoint()) {
+                                        row.sentieroNome
+                                    } else {
+                                        "${row.sentieroNome} ${row.sentieroNumero}".trim()
+                                    },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
                                     maxLines = 2,
@@ -216,26 +221,29 @@ private fun TrekTrailsTable(
                             }
 
                             Box(modifier = Modifier.weight(wPdf), contentAlignment = Alignment.Center) {
-                                IconButton(
-                                    onClick = { onOpenPdf(row) },
-                                    enabled = row.hasPdf(),
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PictureAsPdf,
-                                        contentDescription = pdfDesc,
-                                        tint = if (row.hasPdf()) Color(0xFFD32F2F) else Color(0xFFBDBDBD),
-                                    )
+                                if (!row.isWaypoint()) {
+                                    IconButton(
+                                        onClick = { onOpenPdf(row) },
+                                        enabled = row.hasPdf(),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.PictureAsPdf,
+                                            contentDescription = pdfDesc,
+                                            tint = if (row.hasPdf()) Color(0xFFD32F2F) else Color(0xFFBDBDBD),
+                                        )
+                                    }
                                 }
                             }
 
                             Box(modifier = Modifier.weight(wTrack), contentAlignment = Alignment.Center) {
-                                val isTrackSelected = selectedTrailKey == row.trackKey()
+                                val isSelected = selectedTrailKey == row.trackKey()
+                                val actionLabel = if (row.isWaypoint()) gotoLabel else traceLabel
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),
-                                    color = if (isTrackSelected) Color(0xFFFFEB3B) else Color.Transparent,
+                                    color = if (isSelected) Color(0xFFFFEB3B) else Color.Transparent,
                                 ) {
                                     Text(
-                                        text = traceLabel,
+                                        text = actionLabel,
                                         fontWeight = FontWeight.Black,
                                         fontSize = 10.sp,
                                         maxLines = 1,
@@ -853,18 +861,7 @@ fun HelpScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         }
-                        if (embeddedInShell) {
-                            IconButton(
-                                onClick = onBack,
-                                modifier = Modifier.size(44.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResourceForLocale(currentLanguage, R.string.back),
-                                    tint = Color(0xFF1B1B1B),
-                                )
-                            }
-                        } else {
+                        if (!embeddedInShell) {
                             OutlinedButton(
                                 onClick = { showLogoutDialog = true },
                                 modifier = Modifier.heightIn(min = 44.dp),
@@ -1348,7 +1345,7 @@ fun HelpScreen(
                         val altText = altitude ?: "---"
                         val latDouble = latitude?.toDoubleOrNull()
                         val lonDouble = longitude?.toDoubleOrNull()
-                        val trekRows = remember { TrekTrailCatalog.trails() }
+                        val trekRows = remember(context) { TrekCatalog.allEntries(context) }
                         var selectedTrailKey by remember {
                             mutableStateOf(TrekTrailSelectionStore.loadActiveTrailKey(context))
                         }

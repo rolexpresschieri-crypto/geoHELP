@@ -31,8 +31,8 @@ android {
         applicationId = "it.geohelp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 59
-        versionName = "1.2.38"
+        versionCode = 66
+        versionName = "1.2.45"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -254,6 +254,8 @@ tasks.matching { it.name == "assembleDevDebug" }
     .configureEach { finalizedBy("renameDevDebugArtifact") }
 tasks.matching { it.name == "assembleDevRelease" }
     .configureEach { finalizedBy("renameDevReleaseArtifact") }
+tasks.matching { it.name == "assembleProdRelease" }
+    .configureEach { finalizedBy("renameReleaseApkOnly") }
 
 dependencies {
     implementation(libs.androidx.core.ktx)

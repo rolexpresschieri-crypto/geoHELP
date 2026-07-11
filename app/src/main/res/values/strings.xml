@@ -76,13 +76,14 @@
     <string name="map_calib_guide_6_title">Ore senza problemi, stesso ambiente</string>
     <string name="map_calib_guide_6_body">Spesso non serve ripetere.</string>
     <string name="map_elevation_format">%1$s m s.l.m.</string>
-    <string name="trek_trails_section_title">Sentieri da percorrere</string>
+    <string name="trek_trails_section_title">Sentieri da percorrere e P.O.I.</string>
     <string name="trek_trails_empty">Nessun sentiero (.trk) aggiunto. Qui compariranno i percorsi che scegli di fare.</string>
     <string name="trek_table_header_comune">COMUNE</string>
     <string name="trek_table_header_sentiero">SENTIERO</string>
     <string name="trek_table_header_pdf">PDF</string>
     <string name="trek_table_header_trace">TRACK</string>
     <string name="trek_table_trace_btn">TRACK</string>
+    <string name="trek_table_goto_btn">GO TO</string>
     <string name="trek_table_pdf_desc">Apri PDF descrizione sentiero</string>
     <string name="trek_table_air_distance">Distanza (linea d’aria): %1$s</string>
     <string name="map_trail_air_distance">Distanza in linea d’aria: %1$s</string>
@@ -99,10 +100,10 @@
     <!-- Bottom nav -->
     <string name="tab_sos">SOS</string>
     <string name="tab_help">Help</string>
-    <string name="tab_call_112">Chiama 112</string>
+    <string name="tab_call_112">Chiama\n112</string>
     <string name="tab_position">Posizione</string>
     <string name="tab_tracking">Trekking</string>
-    <string name="tab_settings">Impostazioni</string>
+    <string name="tab_settings">Set</string>
     <string name="content_desc_settings">Impostazioni</string>
     <string name="content_desc_call_112">Chiama 112</string>
     <string name="content_desc_position">Posizione</string>
@@ -116,6 +117,27 @@
     <string name="content_desc_logo_ansmi_nv">Nucleo Volontari ANSMI</string>
     <string name="content_desc_logo_ucrs">Nucleo Cinofili da Ricerca e Soccorso</string>
     <!-- Home -->
+    <string name="nav_home">Home</string>
+    <string name="content_desc_nav_home">Torna alla home</string>
+    <string name="tab_ordinances">ORDINANZE</string>
+    <string name="content_desc_ordinances">Ordinanze turistiche</string>
+    <string name="ordinances_title">Ordinanze turistiche</string>
+    <string name="ordinances_subtitle">Per comune, dalla più recente. Tocca per aprire il PDF.</string>
+    <string name="ordinances_empty">Nessuna ordinanza pubblicata al momento.</string>
+    <string name="ordinances_open_pdf">Apri PDF ordinanza</string>
+    <string name="ordinances_error_load">Impossibile caricare le ordinanze.</string>
+    <string name="ordinances_error_not_configured">Servizio non configurato.</string>
+    <string name="admin_ordinances_title">Gestione ordinanze</string>
+    <string name="admin_ordinances_hint">Carica prima il PDF nel bucket Supabase «ordinances», poi inserisci il percorso (es. SESTRIERE/260706 — l\'app aggiunge .pdf).</string>
+    <string name="admin_ordinances_add">Aggiungi ordinanza</string>
+    <string name="admin_ordinances_comune">Comune</string>
+    <string name="admin_ordinances_title_field">Titolo (MAIUSCOLO)</string>
+    <string name="admin_ordinances_date">Data (AAAA – MM – GG)</string>
+    <string name="admin_ordinances_pdf_path">Percorso PDF in Storage (MAIUSCOLO, senza .pdf)</string>
+    <string name="admin_ordinances_delete_title">Eliminare ordinanza?</string>
+    <string name="admin_ordinances_delete_msg">La riga verrà rimossa dal catalogo. Il PDF in Storage resta finché non lo cancelli manualmente.</string>
+    <string name="admin_ordinances_delete_confirm">Elimina</string>
+    <string name="admin_ordinances_error_save">Impossibile salvare l\'ordinanza.</string>
     <string name="tap_images">Premi sulle immagini</string>
     <string name="help">HELP</string>
     <string name="call_112">CHIAMA 112</string>

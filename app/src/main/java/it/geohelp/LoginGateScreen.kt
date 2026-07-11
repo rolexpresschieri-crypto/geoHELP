@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import it.geohelp.admin.OrdinancesAdminSection
 import it.geohelp.admin.SosRecipientsAdminSection
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +97,7 @@ fun LoginGateScreen(
                 embeddedInHome = true,
                 onAuthenticated = onAuthenticated,
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
@@ -110,8 +111,11 @@ fun SettingsScreen(
     onOpenMedical: () -> Unit,
     onBack: () -> Unit,
     canManageSosRecipients: Boolean = false,
+    canManageOrdinances: Boolean = false,
     sosRecipientsReloadKey: Int = 0,
     onSosRecipientsChanged: () -> Unit = {},
+    ordinancesReloadKey: Int = 0,
+    onOrdinancesChanged: () -> Unit = {},
 ) {
     val context = LocalContext.current
     fun localized(resId: Int): String =
@@ -174,6 +178,15 @@ fun SettingsScreen(
                     currentLanguage = currentLanguage,
                     reloadKey = sosRecipientsReloadKey,
                     onRecipientsChanged = onSosRecipientsChanged,
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+            if (canManageOrdinances) {
+                OrdinancesAdminSection(
+                    currentLanguage = currentLanguage,
+                    reloadKey = ordinancesReloadKey,
+                    onOrdinancesChanged = onOrdinancesChanged,
+                    stringResourceForLocale = { lang, resId -> localized(resId) },
                 )
                 Spacer(Modifier.height(16.dp))
             }

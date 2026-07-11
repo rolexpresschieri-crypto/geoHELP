@@ -13,8 +13,17 @@ data class TrekTrailRow(
     val trkAsset: String? = null,
     val startLat: Double,
     val startLon: Double,
+    val kind: TrekEntryKind = TrekEntryKind.TRAIL,
+    /** Icona POI in assets, es. trek/wp/CESANA/CESANA.png */
+    val wpIconAsset: String? = null,
 ) {
-    fun hasPdf(): Boolean = !pdfAsset.isNullOrBlank() || !pdfUrl.isNullOrBlank()
+    fun hasPdf(): Boolean = kind == TrekEntryKind.TRAIL &&
+        (!pdfAsset.isNullOrBlank() || !pdfUrl.isNullOrBlank())
 
-    fun trackKey(): String = trkAsset ?: "${comune}|${sentieroNome}|${sentieroNumero}"
+    fun isWaypoint(): Boolean = kind == TrekEntryKind.WAYPOINT
+
+    fun trackKey(): String = when {
+        isWaypoint() -> wpIconAsset ?: "wp|${comune}|${sentieroNome}|$startLat|$startLon"
+        else -> trkAsset ?: "${comune}|${sentieroNome}|${sentieroNumero}"
+    }
 }

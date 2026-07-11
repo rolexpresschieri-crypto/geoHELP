@@ -74,7 +74,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -121,6 +123,7 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlinx.coroutines.isActive
 
 private enum class MapBasemap(val maxZoom: Double) {
     STREETS(19.0),
@@ -154,9 +157,13 @@ private data class CalibrationGuideRow(
 
 private const val MIN_SPEED_FOR_GPS_HEADING_MPS = 1.5f
 private const val COMPASS_HEADING_OFFSET_KEY = "geohelp.compass_heading_offset_deg"
-private const val MIN_FIX_DISTANCE_TO_UPDATE_M = 4f
+private const val MIN_FIX_DISTANCE_TO_UPDATE_M = 3f
 private const val MIN_STATIONARY_SPEED_MPS = 0.8f
-private const val MAP_ROTATION_UPDATE_THRESHOLD_DEG = 1.5f
+private const val MAP_LOCATION_UPDATE_INTERVAL_MS = 250L
+private const val MAP_POSITION_SMOOTHING_ALPHA_STATIONARY = 0.14f
+private const val MAP_POSITION_SMOOTHING_ALPHA_MOVING = 0.42f
+private const val MAP_ROTATION_SMOOTHING_ALPHA = 0.24f
+private const val MAP_FOLLOW_SNAP_DISTANCE_M = 0.25f
 private const val COMPASS_SMOOTHING_ALPHA = 0.18f
 private const val TRAIL_START_REACHED_DISTANCE_M = 40f
 
@@ -315,18 +322,18 @@ private fun MapView.attachNavigatorGestures(tracker: MapGestureTracker) {
     addMapListener(object : MapListener {
         override fun onScroll(event: ScrollEvent?): Boolean {
             tracker.onMapChanged()
-            if (event != null && userTouchActive && !tracker.isProgrammaticRecent()) {
+            if (event != null && userTouchActive) {
                 tracker.onUserPan()
             }
-            return true
+            return false
         }
 
         override fun onZoom(event: ZoomEvent?): Boolean {
             tracker.onMapChanged()
-            if (event != null && userTouchActive && !tracker.isProgrammaticRecent()) {
+            if (event != null && userTouchActive) {
                 tracker.onUserZoom()
             }
-            return true
+            return false
         }
     })
     setOnTouchListener { _, event ->
@@ -347,7 +354,7 @@ private fun MapView.attachNavigatorGestures(tracker: MapGestureTracker) {
                 if (multiTouch || event.pointerCount > 1) {
                     return@setOnTouchListener false
                 }
-                if (!panDetected && !tracker.isProgrammaticRecent()) {
+                if (!panDetected) {
                     if (abs(event.x - touchDownX) > 12f || abs(event.y - touchDownY) > 12f) {
                         panDetected = true
                         tracker.onUserPan()
@@ -383,6 +390,18 @@ private fun smoothHeadingDegrees(current: Float?, target: Float, alpha: Float): 
     return normalizeHeadingDegrees(normalizedCurrent + delta * alpha) ?: normalizedTarget
 }
 
+private fun mapPositionSmoothingAlpha(speedMps: Float): Float {
+    val t = ((speedMps - MIN_STATIONARY_SPEED_MPS) / 3.5f).coerceIn(0f, 1f)
+    return MAP_POSITION_SMOOTHING_ALPHA_STATIONARY +
+        (MAP_POSITION_SMOOTHING_ALPHA_MOVING - MAP_POSITION_SMOOTHING_ALPHA_STATIONARY) * t
+}
+
+private fun smoothGeoPoint(current: GeoPoint, target: GeoPoint, alpha: Float): GeoPoint {
+    val lat = current.latitude + (target.latitude - current.latitude) * alpha
+    val lon = current.longitude + (target.longitude - current.longitude) * alpha
+    return GeoPoint(lat, lon)
+}
+
 private fun shouldAcceptFix(previous: DeviceFix?, candidate: DeviceFix): Boolean {
     previous ?: return true
 
@@ -397,9 +416,9 @@ private fun shouldAcceptFix(previous: DeviceFix?, candidate: DeviceFix): Boolean
 
     val isMoving = max(previous.speedMps, candidate.speedMps) >= MIN_STATIONARY_SPEED_MPS
     val movementThreshold = if (isMoving) {
-        max(2f, minOf(previousAccuracy, candidateAccuracy) * 0.35f)
+        max(1f, minOf(previousAccuracy, candidateAccuracy) * 0.25f)
     } else {
-        max(MIN_FIX_DISTANCE_TO_UPDATE_M, minOf(previousAccuracy, candidateAccuracy) * 0.6f)
+        max(MIN_FIX_DISTANCE_TO_UPDATE_M, minOf(previousAccuracy, candidateAccuracy) * 0.5f)
     }
     if (!isMoving && distanceM < movementThreshold) return false
 
@@ -522,6 +541,7 @@ class MapActivity : ComponentActivity() {
         val trailStartLon = intent.getDoubleExtra(EXTRA_TRAIL_START_LON, Double.NaN).takeIf { it.isFinite() }
         val trailLabel = intent.getStringExtra(EXTRA_TRAIL_LABEL).orEmpty()
         val trkAsset = intent.getStringExtra(EXTRA_TRK_ASSET)?.takeIf { it.isNotBlank() }
+        val isWaypointTarget = intent.getBooleanExtra(EXTRA_IS_WAYPOINT, false)
         val lang = intent.getStringExtra(EXTRA_LANGUAGE)
             ?: getSharedPreferences("geohelp_prefs", MODE_PRIVATE).getString("lang", "it")
             ?: "it"
@@ -540,6 +560,7 @@ class MapActivity : ComponentActivity() {
                     trailStartLongitude = trailStartLon,
                     trailLabel = trailLabel,
                     trkAsset = trkAsset,
+                    isWaypointTarget = isWaypointTarget,
                     onBack = { finish() }
                 )
             }
@@ -555,6 +576,8 @@ class MapActivity : ComponentActivity() {
         const val EXTRA_TRAIL_START_LON = "extra_trail_start_lon"
         const val EXTRA_TRAIL_LABEL = "extra_trail_label"
         const val EXTRA_TRK_ASSET = "extra_trk_asset"
+        const val EXTRA_IS_WAYPOINT = "extra_is_waypoint"
+        const val EXTRA_WP_ICON_ASSET = "extra_wp_icon_asset"
     }
 }
 
@@ -993,6 +1016,58 @@ private fun createNavigatorMarkerDrawable(context: Context, label: String): Bitm
     return BitmapDrawable(context.resources, bitmap)
 }
 
+private fun createWaypointMarkerDrawable(context: Context, label: String): BitmapDrawable {
+    val density = context.resources.displayMetrics.density
+    val widthPx = (140f * density).roundToInt().coerceAtLeast(1)
+    val heightPx = (96f * density).roundToInt().coerceAtLeast(1)
+    val bitmap = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
+    val canvas = AndroidCanvas(bitmap)
+
+    val centerX = widthPx / 2f
+    val labelTop = 54f * density
+    val labelHorizontalPadding = 8f * density
+    val labelCorner = 10f * density
+    val tipY = 10f * density
+    val baseY = 38f * density
+
+    val arrowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.parseColor("#D91F2A")
+        style = Paint.Style.FILL
+    }
+    val labelFill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.argb((0.72f * 255).roundToInt(), 0, 0, 0)
+        style = Paint.Style.FILL
+    }
+    val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        textSize = 11f * density
+        textAlign = Paint.Align.CENTER
+        typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT_BOLD, android.graphics.Typeface.BOLD)
+    }
+
+    val arrowPath = Path().apply {
+        moveTo(centerX, tipY)
+        lineTo(centerX + 13f * density, baseY)
+        lineTo(centerX - 13f * density, baseY)
+        close()
+    }
+    canvas.drawPath(arrowPath, arrowPaint)
+
+    val display = navigatorMarkerLabel(label)
+    val textWidth = textPaint.measureText(display)
+    val labelRect = RectF(
+        (centerX - textWidth / 2f - labelHorizontalPadding).coerceAtLeast(0f),
+        labelTop,
+        (centerX + textWidth / 2f + labelHorizontalPadding).coerceAtMost(widthPx.toFloat()),
+        labelTop + 20f * density,
+    )
+    canvas.drawRoundRect(labelRect, labelCorner, labelCorner, labelFill)
+    val textBaseline = labelRect.centerY() - (textPaint.descent() + textPaint.ascent()) / 2f
+    canvas.drawText(display, centerX, textBaseline, textPaint)
+
+    return BitmapDrawable(context.resources, bitmap)
+}
+
 private fun rememberNavigatorMarkerOverlay(
     mapView: MapView,
     existingMarker: Marker?,
@@ -1225,7 +1300,7 @@ private fun DeviceLocationEffect(
 
             providers.forEach { provider ->
                 runCatching {
-                    locationManager.requestLocationUpdates(provider, 500L, 0f, listener)
+                    locationManager.requestLocationUpdates(provider, MAP_LOCATION_UPDATE_INTERVAL_MS, 0f, listener)
                 }
             }
 
@@ -1264,6 +1339,65 @@ private fun CompassEffect(onHeading: (Float) -> Unit) {
     }
 }
 
+@Composable
+private fun MapNavigatorAnimationEffect(
+    mapView: MapView?,
+    followMode: Boolean,
+    targetPoint: GeoPoint?,
+    navigatorHeading: Float?,
+    northDynamicEnabled: Boolean,
+    speedMps: Float,
+    gestureTracker: MapGestureTracker,
+) {
+    val latestFollowMode by rememberUpdatedState(followMode)
+    val latestTargetPoint by rememberUpdatedState(targetPoint)
+    val latestHeading by rememberUpdatedState(navigatorHeading)
+    val latestNorthDynamic by rememberUpdatedState(northDynamicEnabled)
+    val latestSpeedMps by rememberUpdatedState(speedMps)
+
+    LaunchedEffect(mapView) {
+        val view = mapView ?: return@LaunchedEffect
+        var smoothedCenter: GeoPoint? = null
+        var smoothedOrientation: Float? = null
+
+        while (isActive) {
+            withFrameNanos { }
+
+            val follow = latestFollowMode
+            val point = latestTargetPoint
+            val heading = latestHeading
+            val northDynamic = latestNorthDynamic
+            val speed = latestSpeedMps
+
+            if (follow && point != null) {
+                val currentCenter = smoothedCenter ?: (view.mapCenter as? GeoPoint) ?: point
+                val alpha = mapPositionSmoothingAlpha(speed)
+                val distanceM = geoPointAirDistanceMeters(currentCenter, point)
+                smoothedCenter = if (distanceM <= MAP_FOLLOW_SNAP_DISTANCE_M) {
+                    point
+                } else {
+                    smoothGeoPoint(currentCenter, point, alpha)
+                }
+                view.controller.setCenter(smoothedCenter)
+            } else {
+                smoothedCenter = null
+            }
+
+            val orientationTarget = when {
+                northDynamic -> heading?.let { -it } ?: 0f
+                else -> 0f
+            }
+            smoothedOrientation = smoothHeadingDegrees(
+                current = smoothedOrientation,
+                target = orientationTarget,
+                alpha = MAP_ROTATION_SMOOTHING_ALPHA,
+            )
+            view.setMapOrientation(smoothedOrientation ?: orientationTarget)
+            view.invalidate()
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MapScreen(
@@ -1276,6 +1410,7 @@ private fun MapScreen(
     trailStartLongitude: Double?,
     trailLabel: String,
     trkAsset: String?,
+    isWaypointTarget: Boolean,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1288,7 +1423,6 @@ private fun MapScreen(
     var headingOffsetDeg by remember { mutableFloatStateOf(loadCompassHeadingOffset(context)) }
     var showCalibrationDialog by remember { mutableStateOf(false) }
     var mapRevision by remember { mutableIntStateOf(0) }
-    var lastAppliedMapOrientation by remember { mutableFloatStateOf(Float.NaN) }
     val mapViewState = remember { mutableStateOf<MapView?>(null) }
     val navigatorOverlayState = remember { mutableStateOf<Marker?>(null) }
     val trailStartOverlayState = remember { mutableStateOf<Marker?>(null) }
@@ -1355,40 +1489,15 @@ private fun MapScreen(
         compassHeading = heading
     }
 
-    LaunchedEffect(mapViewState.value, northDynamicEnabled, navigatorHeading) {
-        val mapView = mapViewState.value ?: return@LaunchedEffect
-        if (northDynamicEnabled) {
-            val target = navigatorHeading?.let { -it } ?: 0f
-            if (
-                lastAppliedMapOrientation.isNaN() ||
-                kotlin.math.abs(angleDeltaDegrees(lastAppliedMapOrientation, target)) >= MAP_ROTATION_UPDATE_THRESHOLD_DEG
-            ) {
-                mapView.setMapOrientation(target)
-                lastAppliedMapOrientation = target
-            }
-        } else {
-            if (
-                lastAppliedMapOrientation.isNaN() ||
-                kotlin.math.abs(angleDeltaDegrees(lastAppliedMapOrientation, 0f)) >= MAP_ROTATION_UPDATE_THRESHOLD_DEG
-            ) {
-                mapView.setMapOrientation(0f)
-                lastAppliedMapOrientation = 0f
-            }
-        }
-        mapView.invalidate()
-    }
-
-    LaunchedEffect(
-        mapViewState.value,
-        followMode,
-        deviceFix?.point?.latitude,
-        deviceFix?.point?.longitude,
-    ) {
-        if (!followMode) return@LaunchedEffect
-        val mapView = mapViewState.value ?: return@LaunchedEffect
-        val point = deviceFix?.point ?: return@LaunchedEffect
-        mapView.centerOnProgrammatic(point, gestureTracker)
-    }
+    MapNavigatorAnimationEffect(
+        mapView = mapViewState.value,
+        followMode = followMode,
+        targetPoint = deviceFix?.point,
+        navigatorHeading = navigatorHeading,
+        northDynamicEnabled = northDynamicEnabled,
+        speedMps = deviceFix?.speedMps ?: 0f,
+        gestureTracker = gestureTracker,
+    )
 
     val attribution = remember(basemap, trailsOverlayEnabled) {
         val base = when (basemap) {
@@ -1487,7 +1596,7 @@ private fun MapScreen(
                         appliedMapOverlayKey = mapOverlayKey
                     }
 
-                    parsedTrk?.points?.takeIf { it.isNotEmpty() }?.let { trackPoints ->
+                    parsedTrk?.points?.takeIf { it.isNotEmpty() && !isWaypointTarget }?.let { trackPoints ->
                         val track = trailTrackOverlayState.value ?: Polyline(mapView).apply {
                             outlinePaint.strokeWidth = 6f
                             outlinePaint.color = android.graphics.Color.parseColor("#D50000")
@@ -1498,18 +1607,27 @@ private fun MapScreen(
                             mapView.overlays.add(track)
                         }
                         trailTrackOverlayState.value = track
+                    } ?: run {
+                        trailTrackOverlayState.value?.let { mapView.overlays.remove(it) }
+                        trailTrackOverlayState.value = null
                     }
 
-                    // Route overlay: current user -> trail start
+                    // Route overlay: current user -> trail start / waypoint
                     val userPoint = deviceFix?.point
                     val route = routeOverlayState.value ?: Polyline(mapView).apply {
                         outlinePaint.strokeWidth = 8f
                         outlinePaint.color = android.graphics.Color.parseColor("#1976D2")
                         outlinePaint.isAntiAlias = true
                     }
-                    val showAirLine = userPoint != null && trailStartPoint != null &&
-                        geoPointAirDistanceMeters(userPoint, trailStartPoint) >= TRAIL_START_REACHED_DISTANCE_M
+                    val airDistanceM = if (userPoint != null && trailStartPoint != null) {
+                        geoPointAirDistanceMeters(userPoint, trailStartPoint)
+                    } else {
+                        null
+                    }
+                    val showAirLine = userPoint != null && trailStartPoint != null && airDistanceM != null &&
+                        (isWaypointTarget || airDistanceM >= TRAIL_START_REACHED_DISTANCE_M)
                     if (showAirLine) {
+                        route.outlinePaint.color = android.graphics.Color.parseColor("#1976D2")
                         route.setPoints(listOf(userPoint!!, trailStartPoint!!))
                         if (!mapView.overlays.contains(route)) {
                             mapView.overlays.add(route)
@@ -1527,15 +1645,21 @@ private fun MapScreen(
                         }
                         startMarker.position = trailStartPoint
                         startMarker.title = trailLabel
-                        // Simple green dot marker
-                        startMarker.icon = BitmapDrawable(
-                            mapView.context.resources,
-                            Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).apply {
-                                val c = AndroidCanvas(this)
-                                val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = android.graphics.Color.parseColor("#0B9F3A") }
-                                c.drawCircle(12f, 12f, 10f, p)
-                            },
-                        )
+                        startMarker.icon = if (isWaypointTarget) {
+                            createWaypointMarkerDrawable(mapView.context, trailLabel)
+                        } else {
+                            BitmapDrawable(
+                                mapView.context.resources,
+                                Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).apply {
+                                    val c = AndroidCanvas(this)
+                                    val p = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                        color = android.graphics.Color.parseColor("#0B9F3A")
+                                    }
+                                    c.drawCircle(12f, 12f, 10f, p)
+                                },
+                            )
+                        }
+                        startMarker.setAnchor(0.5f, if (isWaypointTarget) 38f / 96f else 1f)
                         if (!mapView.overlays.contains(startMarker)) {
                             mapView.overlays.add(startMarker)
                         }
@@ -1621,7 +1745,7 @@ private fun MapScreen(
             // Distance pill for trail
             if (trailStartPoint != null && deviceFix?.point != null) {
                 val meters = geoPointAirDistanceMeters(deviceFix!!.point, trailStartPoint)
-                if (meters >= TRAIL_START_REACHED_DISTANCE_M) {
+                if (isWaypointTarget || meters >= TRAIL_START_REACHED_DISTANCE_M) {
                 val distanceText = remember(language, meters) {
                     val formatted = if (meters >= 1000f) String.format(Locale.US, "%.1f km", meters / 1000f)
                     else String.format(Locale.US, "%.0f m", meters)

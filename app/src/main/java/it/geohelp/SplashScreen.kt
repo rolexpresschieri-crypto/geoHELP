@@ -3,9 +3,17 @@ package it.geohelp
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -15,8 +23,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import it.geohelp.ui.components.AuthorCreditsBottomEnd
+import it.geohelp.ui.components.AuthorCredits
 import it.geohelp.ui.theme.GeoHelpBackground
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -68,9 +77,21 @@ fun SplashScreen(
                             .scale(scale.value)
                     )
                 }
-                AuthorCreditsBottomEnd(
+                AuthorCredits(
+                    text = BuildConfig.VERSION_NAME,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(start = 20.dp, bottom = 24.dp),
+                )
+                AuthorCredits(
                     text = stringResource(R.string.splash_credits),
-                    modifier = Modifier.align(Alignment.BottomEnd),
+                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(end = 20.dp, bottom = 24.dp),
                 )
             }
         }

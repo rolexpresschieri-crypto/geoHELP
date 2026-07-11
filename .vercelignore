@@ -18,8 +18,8 @@ gradlew.bat
 *.jks
 keystore.properties
 local.properties
-docs/**/*.pdf
-docs/**/*.mp4
+docs/geohelp/**/*.pdf
+docs/geohelp/**/*.mp4
 docs/play-store*
 docs/geoHELP*
 docs/SMS*

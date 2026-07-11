@@ -76,13 +76,14 @@
     <string name="map_calib_guide_6_title">Hours without issues, same environment</string>
     <string name="map_calib_guide_6_body">Often no need to repeat.</string>
     <string name="map_elevation_format">%1$s m a.s.l.</string>
-    <string name="trek_trails_section_title">Trails to hike</string>
+    <string name="trek_trails_section_title">Trails to hike and P.O.I.</string>
     <string name="trek_trails_empty">No trails (.trk) added yet. Your chosen routes will appear here.</string>
     <string name="trek_table_header_comune">TOWN</string>
     <string name="trek_table_header_sentiero">TRAIL</string>
     <string name="trek_table_header_pdf">PDF</string>
     <string name="trek_table_header_trace">TRACK</string>
     <string name="trek_table_trace_btn">TRACK</string>
+    <string name="trek_table_goto_btn">GO TO</string>
     <string name="trek_table_pdf_desc">Open trail PDF description</string>
     <string name="trek_table_air_distance">Distance (straight line): %1$s</string>
     <string name="map_trail_air_distance">Straight-line distance: %1$s</string>
@@ -99,7 +100,7 @@
     <!-- Bottom nav -->
     <string name="tab_sos">SOS</string>
     <string name="tab_help">Help</string>
-    <string name="tab_call_112">Call 112</string>
+    <string name="tab_call_112">Call\n112</string>
     <string name="tab_position">Position</string>
     <string name="tab_tracking">Trekking</string>
     <string name="tab_settings">Settings</string>
@@ -116,6 +117,27 @@
     <string name="content_desc_logo_ansmi_nv">ANSMI Volunteer Core</string>
     <string name="content_desc_logo_ucrs">Search and Rescue Dog Unit</string>
     <!-- Home -->
+    <string name="nav_home">Home</string>
+    <string name="content_desc_nav_home">Back to home</string>
+    <string name="tab_ordinances">ORDERS</string>
+    <string name="content_desc_ordinances">Tourist ordinances</string>
+    <string name="ordinances_title">Tourist ordinances</string>
+    <string name="ordinances_subtitle">By town, newest first. Tap to open the PDF.</string>
+    <string name="ordinances_empty">No ordinances published at the moment.</string>
+    <string name="ordinances_open_pdf">Open ordinance PDF</string>
+    <string name="ordinances_error_load">Unable to load ordinances.</string>
+    <string name="ordinances_error_not_configured">Service not configured.</string>
+    <string name="admin_ordinances_title">Ordinance management</string>
+    <string name="admin_ordinances_hint">Upload the PDF to Supabase bucket «ordinances» first, then enter the path here (e.g. CESANA/260702.pdf).</string>
+    <string name="admin_ordinances_add">Add ordinance</string>
+    <string name="admin_ordinances_comune">Town</string>
+    <string name="admin_ordinances_title_field">Title (UPPERCASE)</string>
+    <string name="admin_ordinances_date">Date (YYYY – MM – DD)</string>
+    <string name="admin_ordinances_pdf_path">PDF path in Storage (UPPERCASE)</string>
+    <string name="admin_ordinances_delete_title">Delete ordinance?</string>
+    <string name="admin_ordinances_delete_msg">The row will be removed from the catalog. The PDF in Storage remains until you delete it manually.</string>
+    <string name="admin_ordinances_delete_confirm">Delete</string>
+    <string name="admin_ordinances_error_save">Unable to save the ordinance.</string>
     <string name="tap_images">Tap the images</string>
     <string name="help">HELP</string>
     <string name="call_112">CALL 112</string>

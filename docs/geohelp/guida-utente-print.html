@@ -23,7 +23,7 @@
   </style>
 </head>
 <body><h1>geoHELP — Guida rapida all’uso</h1>
-<p><strong>Versione app:</strong> 1.2.38 · <strong>Lingue:</strong> italiano / inglese</p>
+<p><strong>Versione app:</strong> 1.2.45 · <strong>Lingue:</strong> italiano / inglese</p>
 <p>geoHELP è un’app di supporto in montagna (Alta Valsusa). <strong>Non sostituisce il 112.</strong> In pericolo immediato chiama sempre il <strong>Numero Unico di Emergenza</strong>.</p>
 <hr>
 <h2>1. Prima di usare l’app</h2>
@@ -57,8 +57,8 @@
 </tbody></table>
 <p><strong>Consiglio:</strong> in montagna disattiva il risparmio energetico aggressivo sul telefono, così GPS e MAN DOWN funzionano meglio.</p>
 <hr>
-<h2>2. Menu in basso (5 icone)</h2>
-<p>Da sinistra a destra, più il <strong>SOS</strong> al centro:</p>
+<h2>2. Menu in basso</h2>
+<p>Barra verde con <strong>SOS</strong> rosso al centro. Da sinistra a destra:</p>
 <table>
 <thead>
 <tr>
@@ -68,38 +68,41 @@
 </thead>
 <tbody><tr>
 <td><strong>Chiama 112</strong></td>
-<td>Apre la chiamata al Numero Unico di Emergenza</td>
+<td>Apre la chiamata al Numero Unico di Emergenza (due righe: «Chiama» / «112»)</td>
 </tr>
 <tr>
 <td><strong>Trekking</strong></td>
-<td>Posizione GPS, mappa e sentieri da percorrere</td>
+<td>Posizione GPS, mappa, sentieri e P.O.I.</td>
 </tr>
 <tr>
 <td><strong>SOS</strong> (rosso, al centro)</td>
 <td>Schermata di richiesta aiuto (invio <strong>manuale</strong> SMS)</td>
 </tr>
 <tr>
-<td><strong>Impostazioni</strong></td>
-<td>Lingua, consensi, profilo, dati medici, MAN DOWN</td>
+<td><strong>Set</strong></td>
+<td>Profilo, consensi, dati medici, aiuto</td>
 </tr>
 <tr>
 <td><strong>Info</strong></td>
 <td>Link utili (Via Lattea, meteo, webcam, DAE)</td>
 </tr>
 </tbody></table>
+<p><strong>Striscia blu ORDINANZE</strong> (in basso a destra, sopra la barra verde): apre l’elenco delle <strong>ordinanze turistiche</strong> (PDF per comune). Visibile a <strong>tutti</strong>, anche senza login.</p>
+<p><strong>Barra Home</strong> (in alto, quando sei loggato): torna alla schermata iniziale.</p>
 <hr>
-<h2>3. Trekking (posizione e sentieri)</h2>
+<h2>3. Trekking (posizione, sentieri e P.O.I.)</h2>
 <h3>Schermata <strong>Trekking</strong></h3>
 <ul>
 <li>Vedi <strong>latitudine, longitudine</strong>, precisione GPS e altitudine.</li>
 <li>Pulsante <strong>APRI SU MAPPA</strong> → mappa a schermo intero.</li>
 </ul>
-<h3>Tabella sentieri</h3>
+<h3>Tabella sentieri e P.O.I.</h3>
 <ul>
-<li>Sentieri raggruppati per <strong>comune</strong> (es. Sestriere, Cesana).</li>
+<li>Sezione <strong>Sentieri da percorrere e P.O.I.</strong>, raggruppati per <strong>comune</strong> (es. Sestriere, Cesana).</li>
 <li><strong>PDF</strong> → scheda descrittiva del sentiero.</li>
 <li><strong>TRACK</strong> (giallo quando attivo) → apre la mappa con la traccia del sentiero.</li>
-<li>Secondo tap su <strong>TRACK</strong> → disattiva la traccia.</li>
+<li><strong>GO TO</strong> (giallo) → sulla mappa punta verso un <strong>P.O.I.</strong> (punto di interesse).</li>
+<li>Secondo tap su <strong>TRACK</strong> o <strong>GO TO</strong> → disattiva traccia o navigazione verso il P.O.I.</li>
 </ul>
 <h3>Sulla mappa</h3>
 <table>
@@ -131,9 +134,17 @@
 </tr>
 </tbody></table>
 <p><strong>In camminata:</strong> tieni attivo il seguimento GPS (icona fissa). Se sposti la mappa col dito, il seguimento si disattiva: tocca di nuovo il pulsante GPS per ricentrarti.</p>
-<p>Con <strong>TRACK</strong> attivo vedi: traccia rossa del sentiero, linea blu verso l’inizio percorso, distanza in alto.</p>
+<p>Con <strong>TRACK</strong> attivo vedi: traccia rossa del sentiero, <strong>linea blu</strong> verso l’inizio percorso, distanza in alto. Con <strong>GO TO</strong> verso un P.O.I.: linea blu e <strong>triangolo rosso</strong> con il nome del punto.</p>
 <hr>
-<h2>4. SOS — richiesta di aiuto (<strong>invio manuale</strong>)</h2>
+<h2>4. Ordinanze turistiche</h2>
+<ol>
+<li>Tocca la striscia blu <strong>ORDINANZE</strong> (in basso a destra).</li>
+<li>Le ordinanze sono elencate per <strong>comune</strong>, dalla più recente.</li>
+<li>Tocca una riga → si apre il <strong>PDF</strong> nel browser o in un’app lettore PDF.</li>
+</ol>
+<p>Serve <strong>connessione internet</strong>. Se l’elenco è vuoto, non ci sono ordinanze pubblicate al momento.</p>
+<hr>
+<h2>5. SOS — richiesta di aiuto (<strong>invio manuale</strong>)</h2>
 <blockquote>
 <p><strong>SOS non invia</strong> SMS da solo: prepara il messaggio e apre <strong>Messaggi</strong>; <strong>devi premere tu INVIA</strong>.</p>
 </blockquote>
@@ -145,7 +156,7 @@
 <li>Si apre <strong>Messaggi</strong> con testo e <strong>tutti i destinatari attivi</strong> (fino a <strong>3 numeri</strong>) già compilati.</li>
 <li><strong>Controlla e premi INVIA</strong> sul telefono.</li>
 </ol>
-<p>I numeri sono <strong>gestiti dal servizio geoHELP</strong> in Supabase (non li scegli tu nell’app). L’amministratore autorizzato può attivarli/disattivarli e modificarli da <strong>Impostazioni</strong>.</p>
+<p>I numeri sono <strong>gestiti dal servizio geoHELP</strong> (non li scegli tu nell’app).</p>
 <h3>Cosa contiene l’SMS SOS</h3>
 <p>Messaggio compatto con intestazione <strong>«SOS geoHELP»</strong>, ad esempio:</p>
 <ul>
@@ -158,7 +169,7 @@
 </ul>
 <p>Serve <strong>profilo compilato</strong>, <strong>GPS</strong> attivo e l’app <strong>Messaggi</strong> funzionante. Senza rete l’invio può fallire: in emergenza grave usa subito il <strong>112</strong>.</p>
 <hr>
-<h2>5. MAN DOWN — rilevamento caduta (<strong>unico invio automatico</strong>)</h2>
+<h2>6. MAN DOWN — rilevamento caduta (<strong>unico invio automatico</strong>)</h2>
 <blockquote>
 <p><strong>Solo MAN DOWN può inviare automaticamente</strong> SMS (via servizio geoHELP, senza aprire Messaggi).</p>
 </blockquote>
@@ -172,7 +183,7 @@
 <p>In questi casi i sensori del telefono possono rilevare l’evento e avvisare i soccorsi geoHELP <strong>senza che tu invii nulla</strong>.</p>
 <h3>Come funziona</h3>
 <ol>
-<li>In <strong>Impostazioni</strong> accetta il consenso <strong>MAN DOWN</strong>.</li>
+<li>In <strong>Set</strong> accetta il consenso <strong>MAN DOWN</strong>.</li>
 <li>Nella schermata <strong>SOS</strong> premi <strong>Attiva MAN DOWN</strong> (resta in ascolto: compare una notifica).</li>
 <li>Se il telefono rileva una <strong>caduta o urto</strong> importante:<ul>
 <li>parte una <strong>sirena</strong> e un <strong>conto alla rovescia di 60 secondi</strong>;</li>
@@ -192,16 +203,44 @@
 <li>Disattivalo con <strong>Disattiva MAN DOWN</strong> quando non ti serve.</li>
 </ul>
 <hr>
-<h2>6. Dati medici (opzionale)</h2>
+<h2>7. Set (impostazioni)</h2>
+<p>Dall’icona <strong>Set</strong> (ingranaggio) accedi a:</p>
+<table>
+<thead>
+<tr>
+<th>Voce</th>
+<th>Cosa fa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Aiuto</strong></td>
+<td>Apre la schermata SOS / MAN DOWN</td>
+</tr>
+<tr>
+<td><strong>Modifica profilo</strong></td>
+<td>Nome, anno di nascita, telefono, contatto familiare</td>
+</tr>
+<tr>
+<td><strong>Consensi e privacy</strong></td>
+<td>Privacy, dati medici, MAN DOWN</td>
+</tr>
+<tr>
+<td><strong>Dati medici</strong></td>
+<td>Patologie, allergie, terapie (con PIN locale)</td>
+</tr>
+</tbody></table>
+<p><strong>Esci</strong> dall’account dalla schermata iniziale (Home), se disponibile.</p>
+<hr>
+<h2>8. Dati medici (opzionale)</h2>
 <ul>
-<li>Attiva il consenso in <strong>Impostazioni</strong> (icona ingranaggio in basso).</li>
+<li>Attiva il consenso in <strong>Set</strong> → <strong>Consensi e privacy</strong>.</li>
 <li>Crea un <strong>PIN</strong> (minimo 4 cifre) per proteggere l’accesso sul telefono.</li>
 <li>Inserisci patologie, allergie, terapie, gruppo sanguigno, note.</li>
 <li>In emergenza alcune informazioni possono essere incluse negli SMS.</li>
 </ul>
 <p>Il PIN protegge solo l’accesso <strong>sul dispositivo</strong>; i dati sono salvati in modo protetto sui server geoHELP.</p>
 <hr>
-<h2>7. Settaggi consigliati sul telefono</h2>
+<h2>9. Settaggi consigliati sul telefono</h2>
 <p><strong>Android — controlla che:</strong></p>
 <ul>
 <li><strong>Posizione</strong> = Attiva, modalità <strong>Alta precisione</strong> (GPS + rete).</li>
@@ -212,7 +251,7 @@
 </ul>
 <p><strong>In montagna:</strong> tieni il telefono carico; il GPS consuma batteria.</p>
 <hr>
-<h2>8. Lingua</h2>
+<h2>10. Lingua</h2>
 <p>Dall’icona <strong>bandiera</strong> in alto puoi passare tra <strong>italiano</strong> e <strong>inglese</strong>.</p>
 <hr>
 <h2>Ricorda</h2>
@@ -238,6 +277,10 @@
 <tr>
 <td><strong>MAN DOWN</strong></td>
 <td>Unico invio <strong>automatico</strong> se non annulli entro 60 s</td>
+</tr>
+<tr>
+<td><strong>ORDINANZE</strong></td>
+<td>PDF informativi per comune (non sostituiscono fonti ufficiali)</td>
 </tr>
 <tr>
 <td><strong>Mappa / sentieri</strong></td>

@@ -105,7 +105,9 @@ class MainActivity : ComponentActivity() {
             var showConsentsManager by remember { mutableStateOf(false) }
             var showPrivacyPolicy by remember { mutableStateOf(false) }
             var canManageSosRecipients by remember { mutableStateOf(false) }
+            var canManageOrdinances by remember { mutableStateOf(false) }
             var sosRecipientsReloadKey by remember { mutableIntStateOf(0) }
+            var ordinancesReloadKey by remember { mutableIntStateOf(0) }
             var showPrivacyOnboarding by remember { mutableStateOf(false) }
             var showProfileOnboarding by remember { mutableStateOf(false) }
             var showManDownOnboarding by remember { mutableStateOf(false) }
@@ -169,6 +171,7 @@ class MainActivity : ComponentActivity() {
                 userBirthYear = profile.toBirthYear()
                 userPhoneE164 = profile?.userPhone?.trim().orEmpty()
                 canManageSosRecipients = profile?.canManageSosRecipients == true
+                canManageOrdinances = profile?.canManageOrdinances == true
                 medicalSmsSummary = if (hasMedicalConsent) {
                     runCatching { medicalRepo.load().toSmsSummary() }.getOrDefault("")
                 } else {
@@ -313,6 +316,7 @@ class MainActivity : ComponentActivity() {
                                 userBirthYear = null
                                 userPhoneE164 = ""
                                 canManageSosRecipients = false
+                                canManageOrdinances = false
                                 medicalSmsSummary = ""
                                 showMedical = false
                                 shellDestinationName = MainDestination.HOME.name
@@ -329,8 +333,11 @@ class MainActivity : ComponentActivity() {
                         hasManDownConsentActive = hasManDownConsent,
                         medicalSmsSummary = medicalSmsSummary,
                         canManageSosRecipients = canManageSosRecipients,
+                        canManageOrdinances = canManageOrdinances,
                         sosRecipientsExternalReloadKey = sosRecipientsReloadKey,
                         onSosRecipientsChanged = { sosRecipientsReloadKey++ },
+                        ordinancesExternalReloadKey = ordinancesReloadKey,
+                        onOrdinancesChanged = { ordinancesReloadKey++ },
                     )
                 }
             }
