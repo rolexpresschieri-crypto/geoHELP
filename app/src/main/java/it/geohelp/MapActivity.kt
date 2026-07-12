@@ -81,6 +81,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -89,6 +90,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -218,7 +220,7 @@ private fun pickMapScaleBar(mapView: MapView, maxBarWidthPx: Float): Pair<Int, F
     val zoom = mapView.zoomLevelDouble
     val metersPerPixel = 156543.03392 * cos(Math.toRadians(center.latitude)) / 2.0.pow(zoom)
     if (metersPerPixel <= 0) return null
-    for (metric in MAP_SCALE_METRIC_STEPS.reversed()) {
+    for (metric in MAP_SCALE_METRIC_STEPS) {
         val barPx = (metric / metersPerPixel).toFloat()
         if (barPx <= maxBarWidthPx) {
             return metric to barPx
@@ -784,11 +786,14 @@ private fun OutdoorMapScaleOverlay(
     mapRevision: Int,
     language: String,
     altitudeM: Double?,
+    basemap: MapBasemap,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
-    val ink = Color(0xFF4A4A4A)
+    val lightOnDark = basemap == MapBasemap.SATELLITE
+    val ink = if (lightOnDark) Color.White else Color(0xFF4A4A4A)
+    val inkShadow = if (lightOnDark) Color(0x99000000) else Color.Transparent
     val maxBarWidthPx = with(density) { 120.dp.toPx() }
     val picked = remember(mapView, mapRevision) {
         mapView?.let { pickMapScaleBar(it, maxBarWidthPx) }
@@ -799,6 +804,17 @@ private fun OutdoorMapScaleOverlay(
     val barWidthDp = with(density) { picked.second.toDp() }
     val elevationLabel = formatOutdoorElevation(context, language, altitudeM)
     val strokePx = with(density) { 1.2.dp.toPx() }
+    val labelStyle = if (lightOnDark) {
+        TextStyle(
+            shadow = Shadow(
+                color = Color.Black.copy(alpha = 0.85f),
+                offset = Offset(0f, 1f),
+                blurRadius = 3f,
+            ),
+        )
+    } else {
+        TextStyle()
+    }
 
     Column(
         modifier = modifier,
@@ -810,16 +826,24 @@ private fun OutdoorMapScaleOverlay(
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
             lineHeight = 15.sp,
+            style = labelStyle,
         )
         Spacer(Modifier.height(3.dp))
         Canvas(modifier = Modifier.size(width = barWidthDp, height = 10.dp)) {
             val y = 6f
             val tickTop = 2f
             val tickBottom = 10f
-            drawLine(ink, Offset(0f, y), Offset(size.width, y), strokeWidth = strokePx, cap = StrokeCap.Square)
-            for (x in listOf(0f, size.width / 2f, size.width)) {
-                drawLine(ink, Offset(x, tickTop), Offset(x, tickBottom), strokeWidth = strokePx, cap = StrokeCap.Square)
+            fun drawScaleLine(color: Color, width: Float, yOffset: Float = 0f) {
+                val lineY = y + yOffset
+                drawLine(color, Offset(0f, lineY), Offset(size.width, lineY), strokeWidth = width, cap = StrokeCap.Square)
+                for (x in listOf(0f, size.width / 2f, size.width)) {
+                    drawLine(color, Offset(x, tickTop + yOffset), Offset(x, tickBottom + yOffset), strokeWidth = width, cap = StrokeCap.Square)
+                }
             }
+            if (lightOnDark) {
+                drawScaleLine(inkShadow, strokePx + 1.6f, yOffset = 0.8f)
+            }
+            drawScaleLine(ink, strokePx)
         }
         if (elevationLabel != null) {
             Spacer(Modifier.height(3.dp))
@@ -829,6 +853,7 @@ private fun OutdoorMapScaleOverlay(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 lineHeight = 14.sp,
+                style = labelStyle,
             )
         }
     }
@@ -1691,9 +1716,11 @@ private fun MapScreen(
                 mapRevision = mapRevision,
                 language = language,
                 altitudeM = deviceFix?.altitudeM,
+                basemap = basemap,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 10.dp),
+                    .padding(top = 10.dp)
+                    .zIndex(5f),
             )
 
             Row(
