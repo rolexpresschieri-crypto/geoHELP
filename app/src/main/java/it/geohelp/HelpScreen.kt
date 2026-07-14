@@ -77,6 +77,7 @@ import it.geohelp.ui.components.PatronEntry
 import it.geohelp.ui.components.PatronageFooter
 import it.geohelp.ui.components.ProminentDisclosureDialog
 import it.geohelp.ui.components.ScrollDownHint
+import it.geohelp.ui.navigation.GeoHelpShellScrollBottomPadding
 import it.geohelp.ui.theme.GeoHelpBackground
 import it.geohelp.ui.theme.geoHelpOutlinedFieldColors
 import androidx.compose.runtime.rememberCoroutineScope
@@ -422,6 +423,11 @@ fun HelpScreen(
     val smsEventsRepository = remember { SmsEventsRepository() }
     var selectedTab by remember { mutableStateOf(0) }
     val activeTab = if (embeddedInShell) shellTab else selectedTab
+    val scrollBottomInset = when {
+        embeddedInShell -> GeoHelpShellScrollBottomPadding
+        showBottomNavigation -> 88.dp
+        else -> 0.dp
+    }
     var latitude by remember { mutableStateOf<String?>(null) }
     var longitude by remember { mutableStateOf<String?>(null) }
     var altitude by remember { mutableStateOf<String?>(null) }
@@ -1200,6 +1206,9 @@ fun HelpScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResourceForLocale(currentLanguage, R.string.send_sms))
                 }
+                if (scrollBottomInset > 0.dp) {
+                    Spacer(Modifier.height(scrollBottomInset))
+                }
                         }
                             if (showScrollHint) {
                                 ScrollDownHint(
@@ -1209,7 +1218,9 @@ fun HelpScreen(
                                     ),
                                     modifier = Modifier
                                         .align(Alignment.BottomCenter)
-                                        .padding(bottom = 8.dp),
+                                        .padding(
+                                            bottom = if (embeddedInShell) 24.dp else 8.dp,
+                                        ),
                                 )
                             }
                         }
@@ -1460,6 +1471,9 @@ fun HelpScreen(
                             )
                         }
                         Spacer(Modifier.height(16.dp))
+                        if (scrollBottomInset > 0.dp) {
+                            Spacer(Modifier.height(scrollBottomInset))
+                        }
                     }
                     }
                     3 -> {
@@ -1660,7 +1674,7 @@ fun HelpScreen(
                                     .padding(top = 12.dp, bottom = 4.dp, start = 4.dp, end = 4.dp),
                                 lineHeight = 15.sp
                             )
-                            Spacer(Modifier.height(88.dp))
+                            Spacer(Modifier.height(if (scrollBottomInset > 0.dp) scrollBottomInset else 88.dp))
                         }
                     }
                     else -> {

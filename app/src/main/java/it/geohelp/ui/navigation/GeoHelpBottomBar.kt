@@ -73,6 +73,10 @@ private val OrdinanceStripFontSize = 13.sp
 internal val GeoHelpBottomBarTotalHeight: Dp =
     BarContentHeight + SosCircleSize - SosBannerEmbedDepth
 
+/** Spazio sotto contenuto scrollabile nelle tab shell (libera pulsanti coperti dal cerchio SOS). */
+internal val GeoHelpShellScrollBottomPadding: Dp =
+    GeoHelpBottomBarTotalHeight + 16.dp
+
 @Composable
 fun GeoHelpBottomBar(
     selected: MainDestination,
