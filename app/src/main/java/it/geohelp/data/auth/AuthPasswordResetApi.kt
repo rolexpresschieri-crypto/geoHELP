@@ -25,9 +25,10 @@ internal object AuthPasswordResetApi {
 
     suspend fun sendRecoveryEmail(email: String) {
         val redirectCandidates = buildList {
-            add(Supabase.AUTH_REDIRECT_URL)
+            add(Supabase.AUTH_WEB_CALLBACK_URL)
             val webRedirect = BuildConfig.SUPABASE_AUTH_REDIRECT_URL.trim()
             if (webRedirect.isNotEmpty()) add(webRedirect)
+            add(Supabase.AUTH_REDIRECT_URL)
         }.distinct()
 
         var lastError: Throwable? = null

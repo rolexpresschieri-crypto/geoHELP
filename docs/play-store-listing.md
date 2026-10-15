@@ -1,143 +1,127 @@
 # Testi scheda Play Store — geoHELP
 
-Aggiornati per release **1.2.45** (giugno 2026).  
-Patrocinio **Comune di Sestriere**, **Comune di Cesana Torinese**, **Consorzio Turismo Sestriere**.
+Correzione rifiuto **Broken or Inaccessible Source Link** (18 ago 2026):
+`https://www.regione.piemonte.it/` è **bloccato dal firewall** della Regione
+(“pagina temporaneamente bloccata a causa di un problema di sicurezza”).
+Google non riesce ad aprirlo → rifiuta.
 
-Play Console → **Espandi la base utenti** → **Scheda dello store** → incolla nelle lingue IT / EN.
+URL funzionanti da usare:
 
-Note di rilascio per la prima pubblicazione / aggiornamento: vedi `play-store-release-1.2.45.md`.
+- Regione: https://www.regione.piemonte.it/web/
+- Sestriere: https://www.comune.sestriere.to.it/it-it/home
+- Cesana: https://www.comune.cesana.to.it/it-it/home
 
----
-
-## Descrizione breve (max 80 caratteri)
-
-**Italiano (it-IT)** — 78 caratteri  
-`SOS, sentieri, ordinanze PDF. GPS e MAN DOWN. Patrocinio Alta Valsusa.`
-
-**English (en-GB)** — 77 caratteri  
-`SOS, trails, PDF ordinances. GPS & MAN DOWN. Upper Susa Valley patronage.`
+L’AAB **1.2.49** (versionCode 72) usa la stessa prua di SAR e il recupero password via mail.
 
 ---
 
-## Descrizione completa (max 4000 caratteri)
+## Descrizione breve
 
-### Italiano
+**IT**  
+`SOS montagna, sentieri Valsusa, avvisi locali PDF. GPS e MAN DOWN.`
+
+**EN**  
+`Mountain SOS, Valsusa trails, local PDF notices. GPS & MAN DOWN.`
+
+---
+
+## Descrizione completa — Italiano (incolla in it-IT)
 
 ```
-geoHELP è un’app privata di supporto in montagna e outdoor (Alta Valsusa: Sestriere, Cesana Torinese e territorio). Non sostituisce il 112 né i soccorsi pubblici: in caso di pericolo immediato chiama sempre il Numero Unico di Emergenza.
+geoHELP è un’app PRIVATA di supporto per escursionismo e outdoor in Alta Valsusa (Sestriere, Cesana Torinese e territorio). Aiuta a orientarsi, consultare percorsi e richiedere aiuto con posizione GPS.
 
-Sviluppata con il patrocinio del Comune di Sestriere, del Comune di Cesana Torinese e del Consorzio Turismo Sestriere (loghi e link in app).
+DISCLAIMER IMPORTANTE
+geoHELP NON è un ente pubblico, NON rappresenta Comuni, Regione o altri organismi governativi e NON sostituisce il 112 né i soccorsi pubblici. In caso di pericolo immediato chiama sempre il Numero Unico di Emergenza 112.
+
+Patrocinio (non = affiliazione governativa): Comune di Sestriere, Comune di Cesana Torinese, Consorzio Turismo Sestriere. Loghi e link in app.
+
+FONTI UFFICIALI / ISTITUZIONALI (tutte quelle citate anche in app)
+• Regione Piemonte: https://www.regione.piemonte.it/web/
+• Comune di Sestriere: https://www.comune.sestriere.to.it/it-it/home
+• Comune di Cesana Torinese: https://www.comune.cesana.to.it/it-it/home
+Gli avvisi/ordinanze in app sono una copia di consultazione: fa sempre fede il testo pubblicato sui siti ufficiali dei Comuni e della Regione (link sopra).
 
 EMERGENZA
-• Pulsante Chiama 112 dalla barra in basso
-• SOS: prepara SMS con GPS, tipo emergenza, note e dati medici (se consentiti); invio manuale da app Messaggi
-• MAN DOWN (opzionale): rilevamento caduta/urto, sirena, conto alla rovescia 60 s annullabile, SMS automatici e traccia posizione
+• Pulsante Chiama 112 (sempre visibile)
+• SOS: prepara SMS con GPS, tipo emergenza, note e dati medici (se consentiti); invio manuale da Messaggi
+• MAN DOWN (opzionale): rilevamento caduta/urto, sirena, conto alla rovescia 60 s annullabile, SMS automatici (fino a 3 contatti) con posizione
 
 TREKKING E MAPPA
-• Coordinate GPS, altitudine, precisione
-• Sentieri da percorrere per comune (PDF scheda, traccia TRACK sulla mappa)
-• Punti di interesse (P.O.I.) con GO TO e navigazione sulla mappa
-• Mappa a schermo intero: layer, bussola, seguimento GPS
+• GPS in tempo reale (coordinate, altitudine, precisione)
+• Percorsi per comune: schede PDF e traccia TRACK (contenuti trekking Valsusa Outdoor / Turismo Torino, con autorizzazione d’uso)
+• P.O.I. con GO TO sulla mappa
+• Mappa: stradale, topografica, satellite; overlay sentieri Waymarked Trails; bussola e seguimento GPS
 
-ORDINANZE TURISTICHE
-• Striscia ORDINANZE: elenco PDF per comune (limitazioni, info utili)
+AVVISI LOCALI (PDF in app)
+• Elenco PDF per comune. Fonte primaria: siti ufficiali dei Comuni e Regione sopra indicati.
 
 PROFILO E SALUTE
-• Account, consensi privacy, profilo (nome, telefono, contatto familiare)
-• Dati medici opzionali protetti da PIN locale
+• Account, consensi privacy, profilo
+• Dati medici opzionali con PIN locale
 
 INFO E LINGUE
-• Link utili: Via Lattea, meteo, webcam, DAE
+• Link utili di terze parti (non enti pubblici): Via Lattea, webcam, DAE, meteo
 • Italiano e inglese
 
-GUIDA UTENTE (PDF)
-https://geohelp-mauve.vercel.app/guida/guida-utente.pdf
+SITO E GUIDA
+• Sito: https://www.ansmi-nucleovolontari.it/geohelp/
+• Guida PDF: https://geohelp-mauve.vercel.app/guida/guida-utente.pdf
 
-Requisiti: Android, GPS, rete mobile, SMS per SOS/MAN DOWN.
-
-geoHELP non è un ente pubblico e non sostituisce il servizio di emergenza 112.
+Requisiti: Android, GPS, rete mobile; SMS per SOS/MAN DOWN.
 ```
 
-### English
+---
+
+## Descrizione completa — English (incolla in en-GB)
 
 ```
-geoHELP is a private support app for mountain and outdoor use (Upper Susa Valley: Sestriere, Cesana Torinese and area). It does not replace 112 or public rescue: in immediate danger always call the emergency number.
+geoHELP is a PRIVATE support app for hiking and outdoor use in the Upper Susa Valley (Sestriere, Cesana Torinese and area). It helps you navigate, browse trails and request help with GPS location.
 
-Developed with the patronage of the Municipality of Sestriere, the Municipality of Cesana Torinese and Consorzio Turismo Sestriere (logos and links in the app).
+IMPORTANT DISCLAIMER
+geoHELP is NOT a public authority, does NOT represent municipalities, regional or other government bodies, and does NOT replace 112 or public emergency services. In immediate danger always call the emergency number 112.
+
+Patronage (not government affiliation): Municipality of Sestriere, Municipality of Cesana Torinese, Consorzio Turismo Sestriere. Logos and links in the app.
+
+OFFICIAL / INSTITUTIONAL SOURCES (all sources also listed in the app)
+• Piedmont Region: https://www.regione.piemonte.it/web/
+• Municipality of Sestriere: https://www.comune.sestriere.to.it/it-it/home
+• Municipality of Cesana Torinese: https://www.comune.cesana.to.it/it-it/home
+Local notices/ordinances in the app are for convenience only; the official text on the municipal and Region websites listed above always prevails.
 
 EMERGENCY
-• Call 112 from the bottom bar
+• Call 112 button (always visible)
 • SOS: prepares an SMS with GPS, emergency type, notes and medical summary (if consented); you send manually from Messages
-• MAN DOWN (optional): fall/impact detection, siren, 60 s cancellable countdown, automatic SMS and position updates
+• MAN DOWN (optional): fall/impact detection, siren, 60 s cancellable countdown, automatic SMS (up to 3 contacts) with location
 
 TREKKING & MAP
-• GPS coordinates, altitude, accuracy
-• Trails by municipality (PDF sheet, TRACK on map)
-• Points of interest (POI) with GO TO on the map
-• Full-screen map: layers, compass, GPS follow mode
+• Real-time GPS (coordinates, altitude, accuracy)
+• Trails by municipality: PDF sheets and TRACK on the map (Valsusa Outdoor / Turismo Torino trekking content, used with authorization)
+• POI with GO TO on the map
+• Map layers: street, topographic, satellite; Waymarked Trails overlay; compass and GPS follow
 
-TOURIST ORDINANCES
-• ORDINANCES tab: PDF list by municipality
+LOCAL NOTICES (PDF in app)
+• PDF list by municipality. Primary sources: official municipal and Region websites listed above.
 
 PROFILE & HEALTH
-• Account, privacy consents, profile (name, phone, family contact)
-• Optional medical data protected by a local PIN
+• Account, privacy consents, profile
+• Optional medical data with local PIN
 
 INFO & LANGUAGES
-• Useful links: Via Lattea, weather, webcams, AED map
+• Third-party useful links (not public authorities): Via Lattea, webcams, AED, weather
 • Italian and English
 
-USER GUIDE (PDF)
-https://geohelp-mauve.vercel.app/guida/guida-utente.pdf
+WEBSITE & GUIDE
+• Website: https://www.ansmi-nucleovolontari.it/geohelp/
+• User guide PDF: https://geohelp-mauve.vercel.app/guida/guida-utente.pdf
 
-Requirements: Android, GPS, mobile network, SMS for SOS/MAN DOWN.
-
-geoHELP is not a public authority and does not replace the 112 emergency service.
+Requirements: Android, GPS, mobile network; SMS for SOS/MAN DOWN.
 ```
 
 ---
 
-## Guida utente e Play Store — cosa si può fare
+## Checklist
 
-| Metodo | Consigliato? | Note |
-|--------|--------------|------|
-| **Incollare tutta la guida** nella descrizione lunga | No | Max **4000 caratteri**, solo testo; diventa illeggibile |
-| **Link al PDF** nella descrizione lunga | **Sì** | Google lo consente; usa URL **https** pubblico |
-| **Campo «Sito web»** in Play Console | **Sì** | Può puntare alla home o a una pagina «Guida» |
-| **Allegare PDF** nella scheda Store | No | Play non ha upload manuale utente nella listing |
-| **Guida dentro l’app** (tab Info / link) | Opzionale | Utile in futuro; non obbligatorio per la pubblicazione |
-
-### File guida nel repo
-
-| File | Uso |
-|------|-----|
-| `docs/geohelp/guida-utente.pdf` | PDF da pubblicare online |
-| `docs/geohelp/geoHELP_guida-utente.pdf` | Copia con nome alternativo |
-| `docs/geohelp/guida-utente.md` | Sorgente; rigenera con `node scripts/gen-user-guide-pdf.mjs` |
-
-### Pubblicare il PDF (prima dello Store)
-
-1. Carica `guida-utente.pdf` su **Vercel** / **GitHub Pages** (es. accanto a privacy).
-2. Verifica che il link si apra **senza login** da browser mobile.
-3. Sostituisci `[INSERISCI-URL-PUBBLICO]` nella descrizione sopra.
-4. (Opzionale) Stesso URL nel campo **Sito web** o **Email di contatto** / pagina supporto.
-
-Esempio struttura consigliata sul sito:
-
-```
-https://geohelp-mauve.vercel.app/
-https://geohelp-mauve.vercel.app/privacy/
-https://geohelp-mauve.vercel.app/guida/guida-utente.pdf
-```
-
----
-
-## Privacy e contatti (campi separati in Play Console)
-
-| Campo | Esempio |
-|-------|---------|
-| **Informativa sulla privacy** | URL pagina privacy (obbligatorio) |
-| **Sito web** | Home geoHELP o pagina guida |
-| **Email assistenza** | rronco23@gmail.com o PEC |
-
-Non confondere **descrizione Store** (marketing + funzioni) con **guida operativa** (PDF): meglio descrizione sintetica + link «Guida completa (PDF)».
+- [ ] IT in scheda **Italiano**, EN in scheda **English** (non mescolare)
+- [ ] Regione = `https://www.regione.piemonte.it/web/`  (con `/web/`)
+- [ ] Comuni = URL con `/it-it/home`
+- [ ] AAB **1.2.49** (versionCode 72) caricato insieme alla scheda

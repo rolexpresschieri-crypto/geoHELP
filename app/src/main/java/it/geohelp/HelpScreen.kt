@@ -68,6 +68,7 @@ import it.geohelp.data.sms.EmergencyTypeCatalog
 import it.geohelp.data.sms.SmsEventKeys
 import it.geohelp.data.sms.SmsEventsRepository
 import it.geohelp.data.supabase.SosRecipientsRepository
+import it.geohelp.data.supabase.TrekEntriesRepository
 import it.geohelp.location.LocationPermissions
 import it.geohelp.trek.TrekCatalog
 import it.geohelp.trek.TrekTrailNavigation
@@ -1356,7 +1357,24 @@ fun HelpScreen(
                         val altText = altitude ?: "---"
                         val latDouble = latitude?.toDoubleOrNull()
                         val lonDouble = longitude?.toDoubleOrNull()
-                        val trekRows = remember(context) { TrekCatalog.allEntries(context) }
+                        val trekRepo = remember { TrekEntriesRepository() }
+                        var trekRows by remember { mutableStateOf(TrekCatalog.allEntries(context)) }
+                        fun reloadTrekCatalog() {
+                            trekRows = TrekCatalog.allEntries(context)
+                            scope.launch {
+                                val remote = runCatching { trekRepo.listActiveRows(context) }.getOrDefault(emptyList())
+                                trekRows = TrekCatalog.allEntries(context, remote)
+                            }
+                        }
+                        val trekLifecycleOwner = LocalLifecycleOwner.current
+                        DisposableEffect(trekLifecycleOwner) {
+                            val observer = LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_RESUME) reloadTrekCatalog()
+                            }
+                            trekLifecycleOwner.lifecycle.addObserver(observer)
+                            onDispose { trekLifecycleOwner.lifecycle.removeObserver(observer) }
+                        }
+                        LaunchedEffect(Unit) { reloadTrekCatalog() }
                         var selectedTrailKey by remember {
                             mutableStateOf(TrekTrailSelectionStore.loadActiveTrailKey(context))
                         }

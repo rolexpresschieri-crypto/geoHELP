@@ -33,6 +33,7 @@ object TrekTrailNavigation {
                 trail.wpIconAsset?.let { putExtra(MapActivity.EXTRA_WP_ICON_ASSET, it) }
             } else {
                 trail.trkAsset?.let { putExtra(MapActivity.EXTRA_TRK_ASSET, it) }
+                trail.trkUrl?.let { putExtra(MapActivity.EXTRA_TRK_URL, it) }
             }
         }
     }

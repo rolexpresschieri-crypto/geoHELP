@@ -4,9 +4,12 @@ import android.content.Context
 import java.util.Locale
 
 object TrekCatalog {
-    fun allEntries(context: Context): List<TrekTrailRow> = mergeByComune(
-        trails = TrekTrailCatalog.trails(),
-        waypoints = TrekWaypointLoader.load(context),
+    fun allEntries(
+        context: Context,
+        remote: List<TrekTrailRow> = emptyList(),
+    ): List<TrekTrailRow> = mergeByComune(
+        trails = TrekTrailCatalog.trails() + remote.filter { !it.isWaypoint() },
+        waypoints = TrekWaypointLoader.load(context) + remote.filter { it.isWaypoint() },
     )
 
     private fun mergeByComune(

@@ -22,6 +22,14 @@ object Supabase {
     const val AUTH_HOST = "login-callback"
     const val AUTH_REDIRECT_URL = "$AUTH_SCHEME://$AUTH_HOST"
 
+    /**
+     * Pagina HTTPS che ricopia i token nella query e poi apre l'app.
+     * Il redirect diretto a [AUTH_REDIRECT_URL] perde il frammento `#…` su Android
+     * e la schermata «Nuova password» non si apre.
+     */
+    const val AUTH_WEB_CALLBACK_URL =
+        "https://geohelp-mauve.vercel.app/privacy/auth-callback.html"
+
     val isConfigured: Boolean
         get() = BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
 

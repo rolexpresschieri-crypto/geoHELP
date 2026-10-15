@@ -7,19 +7,22 @@
   <style>
     body { font-family: sans-serif; padding: 24px; max-width: 720px; margin: 0 auto; line-height: 1.5; }
     .hint { color: #424242; }
+    a { display: inline-block; margin-top: 12px; background: #b71c1c; color: #fff; text-decoration: none; font-weight: 700; padding: 14px 18px; border-radius: 10px; }
   </style>
 </head>
 <body>
   <h1>geoHELP</h1>
-  <p class="hint">Reindirizzamento all'app in corso…</p>
-  <p class="hint">Redirecting to the app…</p>
+  <p class="hint">Tocca il pulsante per scegliere la nuova password nell'app.</p>
+  <p class="hint">Tap the button to choose a new password in the app.</p>
+  <p><a id="open" href="it.geohelp://login-callback">Apri geoHELP</a></p>
   <script>
     (function () {
-      var target = "it.geohelp://login-callback" + (window.location.search || "") + (window.location.hash || "");
-      window.location.replace(target);
-      setTimeout(function () {
-        document.body.insertAdjacentHTML("beforeend", "<p>Se l'app non si apre, installa geoHELP e riapri il link dall'email.</p>");
-      }, 2500);
+      var search = window.location.search ? window.location.search.substring(1) : "";
+      var hash = window.location.hash ? window.location.hash.substring(1) : "";
+      var combined = [search, hash].filter(Boolean).join("&");
+      var target = "it.geohelp://login-callback" + (combined ? "?" + combined : "");
+      var link = document.getElementById("open");
+      link.href = target;
     })();
   </script>
 </body>

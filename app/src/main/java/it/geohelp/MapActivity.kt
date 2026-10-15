@@ -12,12 +12,14 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.display.DisplayManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.MotionEvent
+import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -100,6 +102,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import it.geohelp.location.LocationPermissions
+import it.geohelp.trek.ParsedTrk
 import it.geohelp.trek.TrekTrkParser
 import it.geohelp.ui.theme.GeoHELPTheme
 import org.osmdroid.config.Configuration as OsmdroidConfiguration
@@ -113,19 +116,22 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.TilesOverlay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.text.NumberFormat
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 
 private enum class MapBasemap(val maxZoom: Double) {
     STREETS(19.0),
@@ -157,7 +163,11 @@ private data class CalibrationGuideRow(
     val bodyRes: Int,
 )
 
-private const val MIN_SPEED_FOR_GPS_HEADING_MPS = 1.5f
+/** Sotto ~4 km/h la rotta GPS è rumorosa: si usa la bussola. Stessa soglia di SAR_TOC_GPS. */
+private const val COURSE_MIN_SPEED_MPS = 1.1f
+/** Semaforo o coda: non si torna subito alla bussola. */
+private const val GPS_COURSE_HOLD_MS = 20_000L
+private const val GPS_COURSE_SMOOTHING_ALPHA = 0.55f
 private const val COMPASS_HEADING_OFFSET_KEY = "geohelp.compass_heading_offset_deg"
 private const val MIN_FIX_DISTANCE_TO_UPDATE_M = 3f
 private const val MIN_STATIONARY_SPEED_MPS = 0.8f
@@ -166,8 +176,13 @@ private const val MAP_POSITION_SMOOTHING_ALPHA_STATIONARY = 0.14f
 private const val MAP_POSITION_SMOOTHING_ALPHA_MOVING = 0.42f
 private const val MAP_ROTATION_SMOOTHING_ALPHA = 0.24f
 private const val MAP_FOLLOW_SNAP_DISTANCE_M = 0.25f
-private const val COMPASS_SMOOTHING_ALPHA = 0.18f
 private const val TRAIL_START_REACHED_DISTANCE_M = 40f
+
+/** Ultima rotta GPS accettata. La correzione bussola non si applica alla rotta. */
+private data class TravelCourse(
+    val degrees: Float,
+    val acceptedAtElapsedMs: Long,
+)
 
 private val MAP_SCALE_METRIC_STEPS = intArrayOf(
     15_000_000, 8_000_000, 4_000_000, 2_000_000, 1_000_000, 500_000, 250_000, 100_000,
@@ -283,6 +298,21 @@ private val TILE_WAYMARKED_TRAILS_HIKING: ITileSource = object : OnlineTileSourc
         val y = MapTileIndex.getY(pMapTileIndex)
         return "$baseUrl$z/$x/$y$mImageFilenameEnding"
     }
+}
+
+private fun syncWaymarkedTrailsOverlay(
+    mapView: MapView,
+    overlayHolder: MutableList<TilesOverlay>,
+    basemap: MapBasemap,
+    enabled: Boolean,
+) {
+    overlayHolder.forEach { mapView.overlays.remove(it) }
+    overlayHolder.clear()
+    if (!basemap.supportsTrailsOverlay() || !enabled) return
+    val trailsProvider = MapTileProviderBasic(mapView.context.applicationContext, TILE_WAYMARKED_TRAILS_HIKING)
+    val overlay = TilesOverlay(trailsProvider, mapView.context)
+    mapView.overlays.add(0, overlay)
+    overlayHolder.add(overlay)
 }
 
 private class MapGestureTracker {
@@ -437,19 +467,35 @@ private fun geoPointAirDistanceMeters(from: GeoPoint, to: GeoPoint): Float {
     return out[0]
 }
 
-private fun isGpsCourseHeadingReliable(speedMps: Float, gpsBearing: Float?): Boolean =
-    speedMps >= MIN_SPEED_FOR_GPS_HEADING_MPS && normalizeHeadingDegrees(gpsBearing) != null
+private fun TravelCourse?.acceptGpsCourse(
+    speedMps: Float,
+    bearing: Float?,
+    nowElapsedMs: Long,
+): TravelCourse? {
+    val course = normalizeHeadingDegrees(bearing) ?: return this
+    if (speedMps < COURSE_MIN_SPEED_MPS) return this
+    val smoothed = smoothHeadingDegrees(this?.degrees, course, GPS_COURSE_SMOOTHING_ALPHA)
+    return TravelCourse(smoothed, nowElapsedMs)
+}
 
+private fun TravelCourse?.isFresh(nowElapsedMs: Long): Boolean {
+    if (this == null) return false
+    return nowElapsedMs - acceptedAtElapsedMs < GPS_COURSE_HOLD_MS
+}
+
+/**
+ * In movimento la prua è la rotta GPS. Da fermo, o dopo [GPS_COURSE_HOLD_MS], la bussola.
+ * L'offset di calibrazione vale solo per la bussola.
+ */
 private fun resolveNavigatorHeading(
     compassHeading: Float?,
-    gpsBearing: Float?,
-    speedMps: Float,
+    travelCourse: TravelCourse?,
+    nowElapsedMs: Long,
     calibrationOffsetDeg: Float = 0f,
 ): Float? {
-    val gpsCourse = normalizeHeadingDegrees(gpsBearing)
-    val useGps = speedMps >= MIN_SPEED_FOR_GPS_HEADING_MPS && gpsCourse != null
-    val raw = if (useGps) gpsCourse else normalizeHeadingDegrees(compassHeading) ?: return null
-    return normalizeHeadingDegrees(raw + calibrationOffsetDeg)
+    if (travelCourse.isFresh(nowElapsedMs)) return travelCourse?.degrees
+    val compass = normalizeHeadingDegrees(compassHeading) ?: return null
+    return normalizeHeadingDegrees(compass + calibrationOffsetDeg)
 }
 
 private fun Context.getStringForAppLanguage(langCode: String, resId: Int): String {
@@ -543,6 +589,7 @@ class MapActivity : ComponentActivity() {
         val trailStartLon = intent.getDoubleExtra(EXTRA_TRAIL_START_LON, Double.NaN).takeIf { it.isFinite() }
         val trailLabel = intent.getStringExtra(EXTRA_TRAIL_LABEL).orEmpty()
         val trkAsset = intent.getStringExtra(EXTRA_TRK_ASSET)?.takeIf { it.isNotBlank() }
+        val trkUrl = intent.getStringExtra(EXTRA_TRK_URL)?.takeIf { it.isNotBlank() }
         val isWaypointTarget = intent.getBooleanExtra(EXTRA_IS_WAYPOINT, false)
         val lang = intent.getStringExtra(EXTRA_LANGUAGE)
             ?: getSharedPreferences("geohelp_prefs", MODE_PRIVATE).getString("lang", "it")
@@ -562,6 +609,7 @@ class MapActivity : ComponentActivity() {
                     trailStartLongitude = trailStartLon,
                     trailLabel = trailLabel,
                     trkAsset = trkAsset,
+                    trkUrl = trkUrl,
                     isWaypointTarget = isWaypointTarget,
                     onBack = { finish() }
                 )
@@ -578,6 +626,7 @@ class MapActivity : ComponentActivity() {
         const val EXTRA_TRAIL_START_LON = "extra_trail_start_lon"
         const val EXTRA_TRAIL_LABEL = "extra_trail_label"
         const val EXTRA_TRK_ASSET = "extra_trk_asset"
+        const val EXTRA_TRK_URL = "extra_trk_url"
         const val EXTRA_IS_WAYPOINT = "extra_is_waypoint"
         const val EXTRA_WP_ICON_ASSET = "extra_wp_icon_asset"
     }
@@ -586,24 +635,15 @@ class MapActivity : ComponentActivity() {
 @Composable
 private fun CompassHeadingPanel(
     language: String,
-    compassHeading: Float?,
-    gpsBearing: Float?,
-    speedMps: Float,
-    headingOffsetDeg: Float,
+    navigatorHeading: Float?,
+    useGpsCourse: Boolean,
     modifier: Modifier = Modifier,
     panelContentDescription: String
 ) {
     val context = LocalContext.current
-    val useGpsCourse = isGpsCourseHeadingReliable(speedMps, gpsBearing)
-    val navigatorHeading = resolveNavigatorHeading(
-        compassHeading = compassHeading,
-        gpsBearing = gpsBearing,
-        speedMps = speedMps,
-        calibrationOffsetDeg = headingOffsetDeg,
-    )
     val hInt = navigatorHeading?.roundToInt()?.let { ((it % 360) + 360) % 360 } ?: 0
     val pruaPadded = hInt.toString().padStart(3, '0')
-    val compassNorm = normalizeHeadingDegrees(compassHeading) ?: 0f
+    val arrowNorm = navigatorHeading ?: 0f
 
     val nord = remember(language) { context.getStringForAppLanguage(language, R.string.map_panel_nord) }
     val magnetic = remember(language) { context.getStringForAppLanguage(language, R.string.map_panel_magnetic) }
@@ -656,7 +696,7 @@ private fun CompassHeadingPanel(
                 tint = Color(0xFFFFEB3B),
                 modifier = Modifier
                     .size(36.dp)
-                    .graphicsLayer { rotationZ = -compassNorm },
+                    .graphicsLayer { rotationZ = -arrowNorm },
             )
             Spacer(Modifier.height(8.dp))
             Text(
@@ -1243,19 +1283,6 @@ private fun MapPositionInfoPanel(
     }
 }
 
-private fun applyMapOverlays(
-    mapView: MapView,
-    basemap: MapBasemap,
-    trailsOverlayEnabled: Boolean,
-) {
-    mapView.overlays.clear()
-
-    if (basemap.supportsTrailsOverlay() && trailsOverlayEnabled) {
-        val trailsProvider = MapTileProviderBasic(mapView.context.applicationContext, TILE_WAYMARKED_TRAILS_HIKING)
-        mapView.overlays.add(TilesOverlay(trailsProvider, mapView.context))
-    }
-}
-
 @Composable
 private fun MapLifecycleEffect(mapView: MapView) {
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1280,7 +1307,7 @@ private fun MapLifecycleEffect(mapView: MapView) {
 @Composable
 private fun DeviceLocationEffect(
     enabled: Boolean,
-    onFix: (DeviceFix) -> Unit,
+    onFix: (DeviceFix, TravelCourse?) -> Unit,
 ) {
     val context = LocalContext.current
     DisposableEffect(enabled) {
@@ -1292,13 +1319,13 @@ private fun DeviceLocationEffect(
             var lastPublishedFix: DeviceFix? = null
             var lastGpsReceivedAtMs = 0L
 
-            fun publish(location: Location?) {
-                if (location == null) return
+            fun publish(location: Location?): DeviceFix? {
+                if (location == null) return null
                 if (location.provider != LocationManager.GPS_PROVIDER) {
                     if (lastGpsReceivedAtMs > 0L &&
                         SystemClock.uptimeMillis() - lastGpsReceivedAtMs < 15_000L
                     ) {
-                        return
+                        return null
                     }
                 } else {
                     lastGpsReceivedAtMs = SystemClock.uptimeMillis()
@@ -1312,16 +1339,37 @@ private fun DeviceLocationEffect(
                     fixAtMillis = location.time,
                     provider = location.provider,
                 )
-                if (!shouldAcceptFix(lastPublishedFix, fix)) return
+                if (!shouldAcceptFix(lastPublishedFix, fix)) return null
                 lastPublishedFix = fix
-                onFix(fix)
+                return fix
             }
 
-            val listener = LocationListener { location -> publish(location) }
+            var travelCourse: TravelCourse? = null
+            val listener = LocationListener { location ->
+                val published = publish(location) ?: return@LocationListener
+                if (location.provider == LocationManager.GPS_PROVIDER) {
+                    travelCourse = travelCourse.acceptGpsCourse(
+                        speedMps = published.speedMps,
+                        bearing = published.gpsBearing,
+                        nowElapsedMs = SystemClock.uptimeMillis(),
+                    )
+                }
+                onFix(published, travelCourse)
+            }
 
             providers.mapNotNull { provider ->
                 runCatching { locationManager.getLastKnownLocation(provider) }.getOrNull()
-            }.maxByOrNull { it.time }?.let { publish(it) }
+            }.maxByOrNull { it.time }?.let { location ->
+                val published = publish(location) ?: return@let
+                if (location.provider == LocationManager.GPS_PROVIDER) {
+                    travelCourse = travelCourse.acceptGpsCourse(
+                        speedMps = published.speedMps,
+                        bearing = published.gpsBearing,
+                        nowElapsedMs = SystemClock.uptimeMillis(),
+                    )
+                }
+                onFix(published, travelCourse)
+            }
 
             providers.forEach { provider ->
                 runCatching {
@@ -1341,24 +1389,145 @@ private fun CompassEffect(onHeading: (Float) -> Unit) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
         val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val sensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        val rMat = FloatArray(9)
-        val orient = FloatArray(3)
-        var smoothedHeading: Float? = null
+        val display = (context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager)
+            ?.getDisplay(android.view.Display.DEFAULT_DISPLAY)
+        val rotationMatrix = FloatArray(9)
+        val adjustedRotationMatrix = FloatArray(9)
+        val orientation = FloatArray(3)
+        val truncatedRv = FloatArray(4)
+        val gravityValues = FloatArray(3)
+        val magneticValues = FloatArray(3)
+        var rotationVectorValue: FloatArray? = null
+        var hasGravity = false
+        var hasMag = false
+        var nextEmitAt = 0L
+        val rotationSensor = sm.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val useRotationVector = rotationSensor != null
+
+        fun rotationVectorFrom(event: SensorEvent): FloatArray {
+            return if (event.values.size > 4) {
+                System.arraycopy(event.values, 0, truncatedRv, 0, 4)
+                truncatedRv
+            } else {
+                event.values
+            }
+        }
+
+        fun lowPass(newValues: FloatArray, smoothed: FloatArray) {
+            val alpha = 0.45f
+            for (i in newValues.indices) {
+                smoothed[i] = smoothed[i] + alpha * (newValues[i] - smoothed[i])
+            }
+        }
+
+        fun worldAxesForFlat(): Pair<Int, Int> = when (display?.rotation ?: Surface.ROTATION_0) {
+            Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
+            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
+            Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
+            else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+        }
+
+        fun worldAxesForUpright(): Pair<Int, Int> = when (display?.rotation ?: Surface.ROTATION_0) {
+            Surface.ROTATION_90 -> SensorManager.AXIS_Z to SensorManager.AXIS_MINUS_X
+            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Z
+            Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Z to SensorManager.AXIS_X
+            else -> SensorManager.AXIS_X to SensorManager.AXIS_Z
+        }
+
+        fun worldAxesForUpsideDown(): Pair<Int, Int> = when (display?.rotation ?: Surface.ROTATION_0) {
+            Surface.ROTATION_90 -> SensorManager.AXIS_MINUS_Z to SensorManager.AXIS_MINUS_X
+            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_Z
+            Surface.ROTATION_270 -> SensorManager.AXIS_Z to SensorManager.AXIS_X
+            else -> SensorManager.AXIS_X to SensorManager.AXIS_MINUS_Z
+        }
+
+        fun worldAxesForFaceDown(): Pair<Int, Int> = when (display?.rotation ?: Surface.ROTATION_0) {
+            Surface.ROTATION_90 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_MINUS_X
+            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_Y
+            Surface.ROTATION_270 -> SensorManager.AXIS_Y to SensorManager.AXIS_X
+            else -> SensorManager.AXIS_X to SensorManager.AXIS_MINUS_Y
+        }
+
+        fun updateOrientation() {
+            val now = SystemClock.elapsedRealtime()
+            if (now < nextEmitAt) return
+            val rv = rotationVectorValue
+            if (rv != null) {
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, rv)
+            } else if (hasGravity && hasMag) {
+                if (!SensorManager.getRotationMatrix(rotationMatrix, null, gravityValues, magneticValues)) {
+                    return
+                }
+            } else {
+                return
+            }
+
+            var (axisX, axisY) = worldAxesForFlat()
+            SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, adjustedRotationMatrix)
+            SensorManager.getOrientation(adjustedRotationMatrix, orientation)
+            val pitch = orientation[1].toDouble()
+            val roll = orientation[2].toDouble()
+            when {
+                pitch < -PI / 4 -> {
+                    val axes = worldAxesForUpright()
+                    axisX = axes.first
+                    axisY = axes.second
+                }
+                pitch > PI / 4 -> {
+                    val axes = worldAxesForUpsideDown()
+                    axisX = axes.first
+                    axisY = axes.second
+                }
+                abs(roll) > PI / 2 -> {
+                    val axes = worldAxesForFaceDown()
+                    axisX = axes.first
+                    axisY = axes.second
+                }
+            }
+            SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, adjustedRotationMatrix)
+            SensorManager.getOrientation(adjustedRotationMatrix, orientation)
+            val heading = normalizeHeadingDegrees(Math.toDegrees(orientation[0].toDouble()).toFloat()) ?: return
+            nextEmitAt = now + 32
+            onHeading(heading)
+        }
+
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR) return
-                SensorManager.getRotationMatrixFromVector(rMat, event.values)
-                SensorManager.getOrientation(rMat, orient)
-                val rawHeading = Math.toDegrees(orient[0].toDouble()).toFloat()
-                smoothedHeading = smoothHeadingDegrees(smoothedHeading, rawHeading, COMPASS_SMOOTHING_ALPHA)
-                smoothedHeading?.let(onHeading)
+                when (event.sensor.type) {
+                    Sensor.TYPE_ROTATION_VECTOR -> {
+                        rotationVectorValue = rotationVectorFrom(event).clone()
+                        updateOrientation()
+                    }
+                    Sensor.TYPE_ACCELEROMETER -> {
+                        if (!useRotationVector) {
+                            lowPass(event.values, gravityValues)
+                            hasGravity = true
+                            updateOrientation()
+                        }
+                    }
+                    Sensor.TYPE_MAGNETIC_FIELD -> {
+                        if (!useRotationVector) {
+                            lowPass(event.values, magneticValues)
+                            hasMag = true
+                            updateOrientation()
+                        }
+                    }
+                }
             }
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
         }
-        if (sensor != null) {
-            sm.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+
+        val delayUs = 30_000
+        if (useRotationVector) {
+            sm.registerListener(listener, rotationSensor, delayUs)
+        } else {
+            sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let {
+                sm.registerListener(listener, it, delayUs)
+            }
+            sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.let {
+                sm.registerListener(listener, it, delayUs)
+            }
         }
         onDispose { sm.unregisterListener(listener) }
     }
@@ -1435,6 +1604,7 @@ private fun MapScreen(
     trailStartLongitude: Double?,
     trailLabel: String,
     trkAsset: String?,
+    trkUrl: String?,
     isWaypointTarget: Boolean,
     onBack: () -> Unit
 ) {
@@ -1444,6 +1614,7 @@ private fun MapScreen(
     var followMode by remember { mutableStateOf(true) }
     var northDynamicEnabled by remember { mutableStateOf(true) }
     var deviceFix by remember { mutableStateOf<DeviceFix?>(null) }
+    var travelCourse by remember { mutableStateOf<TravelCourse?>(null) }
     var compassHeading by remember { mutableFloatStateOf(0f) }
     var headingOffsetDeg by remember { mutableFloatStateOf(loadCompassHeadingOffset(context)) }
     var showCalibrationDialog by remember { mutableStateOf(false) }
@@ -1453,11 +1624,9 @@ private fun MapScreen(
     val trailStartOverlayState = remember { mutableStateOf<Marker?>(null) }
     val routeOverlayState = remember { mutableStateOf<Polyline?>(null) }
     val trailTrackOverlayState = remember { mutableStateOf<Polyline?>(null) }
+    val waymarkedTrailsOverlay = remember { mutableListOf<TilesOverlay>() }
+    var lastWaymarkedTrailsSyncKey by remember { mutableStateOf<String?>(null) }
     val gestureTracker = remember { MapGestureTracker() }
-    val mapOverlayKey = remember(basemap, trailsOverlayEnabled) {
-        "${basemap.name}_$trailsOverlayEnabled"
-    }
-    var appliedMapOverlayKey by remember { mutableStateOf<String?>(null) }
 
     val streetLabel = remember(language) { context.getStringForAppLanguage(language, R.string.map_layer_street) }
     val topoLabel = remember(language) { context.getStringForAppLanguage(language, R.string.map_layer_topographic) }
@@ -1486,16 +1655,25 @@ private fun MapScreen(
             null
         }
     }
-    val parsedTrk = remember(trkAsset) {
-        trkAsset?.let { asset ->
-            runCatching { TrekTrkParser.parseAsset(context, asset) }.getOrNull()
+    var parsedTrk by remember { mutableStateOf<ParsedTrk?>(null) }
+    LaunchedEffect(trkAsset, trkUrl) {
+        parsedTrk = withContext(Dispatchers.IO) {
+            when {
+                !trkAsset.isNullOrBlank() ->
+                    runCatching { TrekTrkParser.parseAsset(context, trkAsset) }.getOrNull()
+                !trkUrl.isNullOrBlank() ->
+                    runCatching { TrekTrkParser.parseUrl(context, trkUrl) }.getOrNull()
+                else -> null
+            }
         }
     }
 
+    val headingNowMs = SystemClock.uptimeMillis()
+    val useGpsCourse = northDynamicEnabled && travelCourse.isFresh(headingNowMs)
     val navigatorHeading = resolveNavigatorHeading(
         compassHeading = compassHeading,
-        gpsBearing = deviceFix?.gpsBearing,
-        speedMps = deviceFix?.speedMps ?: 0f,
+        travelCourse = if (northDynamicEnabled) travelCourse else null,
+        nowElapsedMs = headingNowMs,
         calibrationOffsetDeg = headingOffsetDeg,
     )
 
@@ -1506,8 +1684,9 @@ private fun MapScreen(
         mapRevision++
     }
 
-    DeviceLocationEffect(enabled = true) { fix ->
+    DeviceLocationEffect(enabled = true) { fix, course ->
         deviceFix = fix
+        travelCourse = course
     }
 
     CompassEffect { heading ->
@@ -1612,13 +1791,15 @@ private fun MapScreen(
                     }
                     mapView.maxZoomLevel = basemap.maxZoom
 
-                    if (appliedMapOverlayKey != mapOverlayKey) {
-                        applyMapOverlays(
+                    val waymarkedTrailsSyncKey = "${basemap.name}_$trailsOverlayEnabled"
+                    if (waymarkedTrailsSyncKey != lastWaymarkedTrailsSyncKey) {
+                        lastWaymarkedTrailsSyncKey = waymarkedTrailsSyncKey
+                        syncWaymarkedTrailsOverlay(
                             mapView = mapView,
+                            overlayHolder = waymarkedTrailsOverlay,
                             basemap = basemap,
-                            trailsOverlayEnabled = trailsOverlayEnabled,
+                            enabled = trailsOverlayEnabled,
                         )
-                        appliedMapOverlayKey = mapOverlayKey
                     }
 
                     parsedTrk?.points?.takeIf { it.isNotEmpty() && !isWaypointTarget }?.let { trackPoints ->
@@ -1662,7 +1843,7 @@ private fun MapScreen(
                         routeOverlayState.value?.let { mapView.overlays.remove(it) }
                     }
 
-                    // Trail start marker (only if a trail is selected)
+                    // Trail start marker
                     if (trailStartPoint != null) {
                         val startMarker = trailStartOverlayState.value ?: Marker(mapView).apply {
                             setAnchor(0.5f, 1f)
@@ -1689,6 +1870,9 @@ private fun MapScreen(
                             mapView.overlays.add(startMarker)
                         }
                         trailStartOverlayState.value = startMarker
+                    } else {
+                        trailStartOverlayState.value?.let { mapView.overlays.remove(it) }
+                        trailStartOverlayState.value = null
                     }
 
                     val navigatorOverlay = rememberNavigatorMarkerOverlay(
@@ -1705,6 +1889,7 @@ private fun MapScreen(
                         mapView.overlays.add(navigatorOverlay)
                     }
                     navigatorOverlayState.value = navigatorOverlay
+
                     mapView.invalidate()
                 }
             )
@@ -1751,10 +1936,8 @@ private fun MapScreen(
 
             CompassHeadingPanel(
                 language = language,
-                compassHeading = compassHeading,
-                gpsBearing = deviceFix?.gpsBearing,
-                speedMps = deviceFix?.speedMps ?: 0f,
-                headingOffsetDeg = headingOffsetDeg,
+                navigatorHeading = navigatorHeading,
+                useGpsCourse = useGpsCourse,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 14.dp, end = 14.dp)

@@ -387,7 +387,7 @@
     <string name="info_webcam_site_notice">The link to webcamvialattea.it opens an external third-party website (“Webcam Via Lattea”): you will leave the app in your browser. geoHELP does not control that website’s content and does not guarantee availability or updates for the webcam streams.</string>
     <string name="info_webcam_tile_title">WEBCAM VIALATTEA</string>
     <string name="content_desc_webcam_vialattea">Webcam Via Lattea logo — open website</string>
-    <string name="info_official_sources_block">Institutional sources\nPiedmont Region:\nhttps://www.regione.piemonte.it/\n\nPatron municipality and consortium websites (Sestriere, Cesana Torinese, Consorzio Turismo Sestriere) are available from the icons at the bottom of the main screen.\n\nOther links (third-party sites, not public authorities)\nVia Lattea ski area:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (AED map):\nhttps://www.daedove.it/\n\nmeteo.it weather: third-party service; in-app shortcut; use Municipality or Region sites for official information.</string>
+    <string name="info_official_sources_block">Institutional sources\nPiedmont Region:\nhttps://www.regione.piemonte.it/web/\n\nMunicipality of Sestriere:\nhttps://www.comune.sestriere.to.it/it-it/home\n\nMunicipality of Cesana Torinese:\nhttps://www.comune.cesana.to.it/it-it/home\n\nPatron logos are also on the home screen.\n\nOther links (third-party sites, not public authorities)\nVia Lattea ski area:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (AED map):\nhttps://www.daedove.it/\n\nmeteo.it weather: third-party service; in-app shortcut; use Municipality or Region sites for official information.</string>
     <string name="admin_sos_title">SOS SMS recipients</string>
     <string name="admin_sos_back">Back</string>
     <string name="admin_sos_hint">Up to 3 numbers. Active = included in SEND SMS and MAN DOWN. Changes are saved to Supabase.</string>
@@ -402,4 +402,24 @@
     <string name="admin_sos_delete_msg">The number will be removed from Supabase.</string>
     <string name="admin_sos_delete_confirm">Delete</string>
     <string name="admin_sos_pin_cancel">Cancel</string>
+    <string name="admin_trails_title">Manage trails and POI</string>
+    <string name="admin_trails_hint">Upload files first to the Supabase «trails» bucket (pdf/…, trk/…, wp/…), then enter the path without the domain. For trails, empty lat/lon is read from the first TRK point.</string>
+    <string name="admin_trails_add_trail">Add trail</string>
+    <string name="admin_trails_add_poi">Add POI</string>
+    <string name="admin_trails_kind_trail">TRAIL</string>
+    <string name="admin_trails_kind_poi">POI</string>
+    <string name="admin_trails_name">Name</string>
+    <string name="admin_trails_number">Number (e.g. n. 22)</string>
+    <string name="admin_trails_description">Short description</string>
+    <string name="admin_trails_lat">Latitude</string>
+    <string name="admin_trails_lon">Longitude</string>
+    <string name="admin_trails_lat_optional">Latitude (blank = from TRK)</string>
+    <string name="admin_trails_lon_optional">Longitude (blank = from TRK)</string>
+    <string name="admin_trails_pdf_path">PDF path (e.g. pdf/SESTRIERE/22_name.pdf)</string>
+    <string name="admin_trails_trk_path">TRK path (e.g. trk/SESTRIERE/22_name.trk)</string>
+    <string name="admin_trails_icon_path">PNG icon path (optional)</string>
+    <string name="admin_trails_error_save">Could not save. Check Storage files and can_manage_trails.</string>
+    <string name="admin_trails_delete_title">Delete this entry?</string>
+    <string name="admin_trails_delete_msg">The row is removed from the catalog. Files in Storage remain until you delete them manually.</string>
+    <string name="admin_trails_delete_confirm">Delete</string>
 </resources>

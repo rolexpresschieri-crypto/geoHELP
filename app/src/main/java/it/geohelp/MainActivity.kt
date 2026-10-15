@@ -40,6 +40,7 @@ private fun Profile?.toBirthYear(): Int? = this?.birthYear
 class MainActivity : ComponentActivity() {
 
     private var onPasswordRecoveryFromLink: ((Boolean) -> Unit)? = null
+    private var pendingPasswordRecovery = false
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(applyLocale(newBase))
@@ -78,6 +79,7 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(Unit) {
                 onPasswordRecoveryFromLink = { showPasswordRecovery = it }
+                if (pendingPasswordRecovery) showPasswordRecovery = true
                 handleAuthDeepLink(intent)
             }
             val profileRepo = remember { ProfileRepository() }
@@ -106,6 +108,7 @@ class MainActivity : ComponentActivity() {
             var showPrivacyPolicy by remember { mutableStateOf(false) }
             var canManageSosRecipients by remember { mutableStateOf(false) }
             var canManageOrdinances by remember { mutableStateOf(false) }
+            var canManageTrails by remember { mutableStateOf(false) }
             var sosRecipientsReloadKey by remember { mutableIntStateOf(0) }
             var ordinancesReloadKey by remember { mutableIntStateOf(0) }
             var showPrivacyOnboarding by remember { mutableStateOf(false) }
@@ -172,6 +175,7 @@ class MainActivity : ComponentActivity() {
                 userPhoneE164 = profile?.userPhone?.trim().orEmpty()
                 canManageSosRecipients = profile?.canManageSosRecipients == true
                 canManageOrdinances = profile?.canManageOrdinances == true
+                canManageTrails = profile?.canManageTrails == true
                 medicalSmsSummary = if (hasMedicalConsent) {
                     runCatching { medicalRepo.load().toSmsSummary() }.getOrDefault("")
                 } else {
@@ -317,6 +321,7 @@ class MainActivity : ComponentActivity() {
                                 userPhoneE164 = ""
                                 canManageSosRecipients = false
                                 canManageOrdinances = false
+                                canManageTrails = false
                                 medicalSmsSummary = ""
                                 showMedical = false
                                 shellDestinationName = MainDestination.HOME.name
@@ -334,6 +339,7 @@ class MainActivity : ComponentActivity() {
                         medicalSmsSummary = medicalSmsSummary,
                         canManageSosRecipients = canManageSosRecipients,
                         canManageOrdinances = canManageOrdinances,
+                        canManageTrails = canManageTrails,
                         sosRecipientsExternalReloadKey = sosRecipientsReloadKey,
                         onSosRecipientsChanged = { sosRecipientsReloadKey++ },
                         ordinancesExternalReloadKey = ordinancesReloadKey,
@@ -346,18 +352,36 @@ class MainActivity : ComponentActivity() {
 
     private fun handleAuthDeepLink(intent: Intent?) {
         if (!Supabase.isConfigured) return
-        val data: Uri = intent?.data ?: return
+        val source = intent ?: return
+        val data: Uri = source.data ?: return
         if (data.scheme != Supabase.AUTH_SCHEME || data.host != Supabase.AUTH_HOST) return
         val isRecovery = isPasswordRecoveryDeepLink(data)
+        if (isRecovery) {
+            pendingPasswordRecovery = true
+            onPasswordRecoveryFromLink?.invoke(true)
+        }
+        val forAuth = intentWithAuthParamsInFragment(source)
         try {
-            Supabase.client.handleDeeplinks(intent) {
-                if (isRecovery) {
+            Supabase.client.handleDeeplinks(forAuth) {
+                if (isRecovery || pendingPasswordRecovery) {
+                    pendingPasswordRecovery = false
                     onPasswordRecoveryFromLink?.invoke(true)
                 }
             }
         } catch (_: Throwable) {
             // Link reset/conferma scaduto, già usato o malformato: non chiudere l'app.
         }
+    }
+
+    /**
+     * La pagina web mette i token nella query. supabase-kt legge il frammento `#…`:
+     * se manca, lo ricostruiamo dalla query.
+     */
+    private fun intentWithAuthParamsInFragment(intent: Intent): Intent {
+        val data = intent.data ?: return intent
+        if (!data.fragment.isNullOrBlank() || data.encodedQuery.isNullOrBlank()) return intent
+        val rewritten = data.buildUpon().fragment(data.query).build()
+        return Intent(intent).setData(rewritten)
     }
 
     private fun isPasswordRecoveryDeepLink(data: Uri): Boolean {

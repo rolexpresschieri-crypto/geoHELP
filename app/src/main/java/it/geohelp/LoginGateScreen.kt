@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import it.geohelp.admin.OrdinancesAdminSection
 import it.geohelp.admin.SosRecipientsAdminSection
+import it.geohelp.admin.TrekEntriesAdminSection
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -112,6 +113,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     canManageSosRecipients: Boolean = false,
     canManageOrdinances: Boolean = false,
+    canManageTrails: Boolean = false,
     sosRecipientsReloadKey: Int = 0,
     onSosRecipientsChanged: () -> Unit = {},
     ordinancesReloadKey: Int = 0,
@@ -187,6 +189,15 @@ fun SettingsScreen(
                     reloadKey = ordinancesReloadKey,
                     onOrdinancesChanged = onOrdinancesChanged,
                     stringResourceForLocale = { lang, resId -> localized(resId) },
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+            if (canManageTrails) {
+                TrekEntriesAdminSection(
+                    currentLanguage = currentLanguage,
+                    reloadKey = ordinancesReloadKey,
+                    onChanged = onOrdinancesChanged,
+                    stringResourceForLocale = { _, resId -> localized(resId) },
                 )
                 Spacer(Modifier.height(16.dp))
             }

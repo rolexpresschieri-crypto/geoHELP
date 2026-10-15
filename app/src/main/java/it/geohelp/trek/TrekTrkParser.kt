@@ -34,4 +34,14 @@ object TrekTrkParser {
         val content = context.assets.open(assetPath).bufferedReader().use { it.readText() }
         return parse(content)
     }
+
+    fun parseUrl(context: Context, url: String): ParsedTrk {
+        val cache = java.io.File(context.cacheDir, "trek_trk_${url.hashCode()}.trk")
+        if (!cache.exists() || cache.length() == 0L) {
+            java.net.URL(url).openStream().use { input ->
+                cache.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+        return parse(cache.readText())
+    }
 }

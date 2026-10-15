@@ -387,7 +387,7 @@
     <string name="info_webcam_site_notice">Il collegamento a webcamvialattea.it è un link esterno gestito dal sito “Webcam Via Lattea”: uscendo dall\'app si aprirà il browser; geoHELP non controlla i contenuti pubblicati sul sito e non garantisce disponibilità o aggiornamento delle webcam.</string>
     <string name="info_webcam_tile_title">WEBCAM VIALATTEA</string>
     <string name="content_desc_webcam_vialattea">Logo Webcam Via Lattea — apri il sito</string>
-    <string name="info_official_sources_block">Enti e fonti istituzionali\nRegione Piemonte:\nhttps://www.regione.piemonte.it/\n\nI siti dei Comuni patrocinatori (Sestriere, Cesana Torinese) e del Consorzio Turismo Sestriere sono raggiungibili dalle icone in basso nella schermata principale.\n\nAltri collegamenti (siti di terze parti, non sono enti pubblici)\nComprensorio Via Lattea:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (mappa defibrillatori):\nhttps://www.daedove.it/\n\nPrevisioni meteo.it: servizio di terze parti; link nell\'app; per informazioni ufficiali usare i siti dei Comuni o della Regione.</string>
+    <string name="info_official_sources_block">Enti e fonti istituzionali\nRegione Piemonte:\nhttps://www.regione.piemonte.it/web/\n\nComune di Sestriere:\nhttps://www.comune.sestriere.to.it/it-it/home\n\nComune di Cesana Torinese:\nhttps://www.comune.cesana.to.it/it-it/home\n\nI loghi dei patrocinatori sono anche nella schermata principale.\n\nAltri collegamenti (siti di terze parti, non sono enti pubblici)\nComprensorio Via Lattea:\nhttps://www.vialattea.it\n\nWebcam Via Lattea:\nhttps://www.webcamvialattea.it/\n\nDAE dove (mappa defibrillatori):\nhttps://www.daedove.it/\n\nPrevisioni meteo.it: servizio di terze parti; link nell\'app; per informazioni ufficiali usare i siti dei Comuni o della Regione.</string>
     <!-- Gestione destinatari SOS (solo can_manage_sos_recipients) -->
     <string name="admin_sos_title">Destinatari SMS SOS</string>
     <string name="admin_sos_back">Indietro</string>
@@ -403,4 +403,24 @@
     <string name="admin_sos_delete_msg">Il numero verrà rimosso da Supabase.</string>
     <string name="admin_sos_delete_confirm">Elimina</string>
     <string name="admin_sos_pin_cancel">Annulla</string>
+    <string name="admin_trails_title">Gestione sentieri e P.O.I.</string>
+    <string name="admin_trails_hint">Carica prima i file nel bucket Supabase «trails» (pdf/…, trk/…, wp/…), poi inserisci il percorso senza dominio. Per i sentieri, se lat/lon sono vuoti, l\'app legge il primo punto del TRK.</string>
+    <string name="admin_trails_add_trail">Aggiungi sentiero</string>
+    <string name="admin_trails_add_poi">Aggiungi P.O.I.</string>
+    <string name="admin_trails_kind_trail">SENTIERO</string>
+    <string name="admin_trails_kind_poi">P.O.I.</string>
+    <string name="admin_trails_name">Nome</string>
+    <string name="admin_trails_number">Numero (es. n. 22)</string>
+    <string name="admin_trails_description">Descrizione breve</string>
+    <string name="admin_trails_lat">Latitudine</string>
+    <string name="admin_trails_lon">Longitudine</string>
+    <string name="admin_trails_lat_optional">Latitudine (vuoto = dal TRK)</string>
+    <string name="admin_trails_lon_optional">Longitudine (vuoto = dal TRK)</string>
+    <string name="admin_trails_pdf_path">Percorso PDF (es. pdf/SESTRIERE/22_nome.pdf)</string>
+    <string name="admin_trails_trk_path">Percorso TRK (es. trk/SESTRIERE/22_nome.trk)</string>
+    <string name="admin_trails_icon_path">Percorso icona PNG (opz.)</string>
+    <string name="admin_trails_error_save">Impossibile salvare. Verifica file nello Storage e flag can_manage_trails.</string>
+    <string name="admin_trails_delete_title">Eliminare questa voce?</string>
+    <string name="admin_trails_delete_msg">La riga verrà tolta dal catalogo. I file nello Storage restano finché non li cancelli a mano.</string>
+    <string name="admin_trails_delete_confirm">Elimina</string>
 </resources>
